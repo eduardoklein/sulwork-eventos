@@ -22,10 +22,13 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 8 | O sistema tem login? | Não. É uma premissa: qualquer pessoa pode alterar a contribuição de outra. |
 | 9 | O que cada status permite? | Só `ABERTO` aceita inscrições e contribuições. Em `RASCUNHO`, o organizador monta o cardápio. `ENCERRADO`, `REALIZADO` e `CANCELADO` ficam só para leitura. |
 | 10 | Como definir o tipo do evento? | Lista fechada: `CAFE_DA_MANHA`, `ALMOCO`, `LANCHE`, `CONFRATERNIZACAO` e `OUTRO`. |
+| 11 | O item precisa ter categoria? | Sim. A categoria é obrigatória. O sistema bloqueia apagar uma categoria que ainda tem itens. Assim toda a cobertura por categoria é completa. |
+| 12 | Em que unidade fica a meta da categoria? | A unidade pertence à categoria, e os itens dela usam essa unidade. Assim a soma dos itens e a meta são comparáveis. Quem precisa de outra unidade cria outra categoria. |
+| 13 | A quantidade é inteira ou decimal? | Inteira. As unidades são uma lista fechada: `UNIDADE`, `PORCAO`, `GRAMA` e `MILILITRO`. Quem quer 1,5 kg escreve 1500 gramas. A soma e o limite ficam exatos, sem arredondamento. |
 
 ## Tecnologias escolhidas
 
-- **Backend:** Java 21, Spring Boot 3, Maven, JPA/Hibernate, PostgreSQL, Flyway e springdoc-openapi (Swagger).
+- **Backend:** Java 21, Spring Boot 4.0.9, Maven, JPA/Hibernate, PostgreSQL 16, Flyway e springdoc-openapi 3.0.3 (Swagger). O Spring Boot 4 é a versão estável com suporte. A linha 3.4 já saiu do gerador oficial e não recebe mais correções de segurança.
 - **Testes do backend:** JUnit 5 e Testcontainers. Os testes de integração usam um PostgreSQL real, o mesmo banco da produção.
 - **Frontend:** React, TypeScript, Vite e Tailwind. Vitest e React Testing Library nos testes.
 - **Execução:** Docker Compose, com frontend, backend e banco.
