@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,8 @@ import jakarta.persistence.EntityManager;
 @Transactional
 class MapeamentoJpaTest {
 
+	private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
+
 	@Autowired
 	private EntityManager em;
 
@@ -30,7 +33,7 @@ class MapeamentoJpaTest {
 	@Test
 	void gravaELeDeVoltaTodoOGrafoDeEntidades() {
 		Evento evento = new Evento("Almoço", "Fim de ano", TipoEvento.ALMOCO,
-				LocalDateTime.of(2026, 12, 1, 12, 0), LocalDateTime.of(2026, 11, 30, 12, 0));
+				LocalDateTime.of(2026, 12, 1, 12, 0), LocalDateTime.of(2026, 11, 30, 12, 0), FUSO);
 		em.persist(evento);
 		CategoriaEvento categoria = new CategoriaEvento(evento, "Bebidas", UnidadeMedida.MILILITRO, 5000);
 		em.persist(categoria);
@@ -50,6 +53,7 @@ class MapeamentoJpaTest {
 		Evento lido = em.find(Evento.class, evento.getId());
 		assertThat(lido.getStatus()).isEqualTo(StatusEvento.RASCUNHO);
 		assertThat(lido.getTipo()).isEqualTo(TipoEvento.ALMOCO);
+		assertThat(lido.getFuso()).isEqualTo(FUSO);
 		assertThat(lido.getCriadoEm()).isNotNull();
 		assertThat(lido.getAtualizadoEm()).isNotNull();
 
@@ -73,7 +77,7 @@ class MapeamentoJpaTest {
 	@Test
 	void enumsSaoGravadosComoTexto() {
 		Evento evento = new Evento("Lanche", null, TipoEvento.CAFE_DA_MANHA,
-				LocalDateTime.of(2026, 12, 1, 9, 0), LocalDateTime.of(2026, 11, 30, 9, 0));
+				LocalDateTime.of(2026, 12, 1, 9, 0), LocalDateTime.of(2026, 11, 30, 9, 0), FUSO);
 		evento.setStatus(StatusEvento.ABERTO);
 		em.persist(evento);
 		em.flush();
@@ -88,7 +92,7 @@ class MapeamentoJpaTest {
 	@Test
 	void atualizarEventoAvancaAtualizadoEmEMantemCriadoEm() throws InterruptedException {
 		Evento evento = new Evento("Lanche", null, TipoEvento.LANCHE,
-				LocalDateTime.of(2026, 12, 1, 15, 0), LocalDateTime.of(2026, 11, 30, 15, 0));
+				LocalDateTime.of(2026, 12, 1, 15, 0), LocalDateTime.of(2026, 11, 30, 15, 0), FUSO);
 		em.persist(evento);
 		em.flush();
 		LocalDateTime criadoEm = evento.getCriadoEm();

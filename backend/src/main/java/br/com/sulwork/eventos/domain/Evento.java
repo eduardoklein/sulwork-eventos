@@ -1,6 +1,8 @@
 package br.com.sulwork.eventos.domain;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,6 +38,10 @@ public class Evento {
 	@Column(nullable = false)
 	private LocalDateTime prazoAlteracoes;
 
+	/** Fuso em que {@code dataHora} e {@code prazoAlteracoes} são lidos. */
+	@Column(nullable = false)
+	private ZoneId fuso;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private StatusEvento status = StatusEvento.RASCUNHO;
@@ -49,12 +55,14 @@ public class Evento {
 	protected Evento() {
 	}
 
-	public Evento(String nome, String descricao, TipoEvento tipo, LocalDateTime dataHora, LocalDateTime prazoAlteracoes) {
+	public Evento(String nome, String descricao, TipoEvento tipo, LocalDateTime dataHora, LocalDateTime prazoAlteracoes,
+			ZoneId fuso) {
 		this.nome = nome;
 		this.descricao = descricao;
 		this.tipo = tipo;
 		this.dataHora = dataHora;
 		this.prazoAlteracoes = prazoAlteracoes;
+		this.fuso = fuso;
 	}
 
 	@PrePersist
@@ -69,11 +77,11 @@ public class Evento {
 	}
 
 	/** O prazo vale até o instante marcado: nesse instante ainda é possível alterar. */
-	public boolean isPrazoExpirado(LocalDateTime agora) {
-		return agora.isAfter(prazoAlteracoes);
+	public boolean isPrazoExpirado(Instant agora) {
+		return agora.isAfter(prazoAlteracoes.atZone(fuso).toInstant());
 	}
 
-	public boolean isAbertoParaContribuicoes(LocalDateTime agora) {
+	public boolean isAbertoParaContribuicoes(Instant agora) {
 		return status.allowsContributions() && !isPrazoExpirado(agora);
 	}
 
@@ -119,6 +127,14 @@ public class Evento {
 
 	public void setPrazoAlteracoes(LocalDateTime prazoAlteracoes) {
 		this.prazoAlteracoes = prazoAlteracoes;
+	}
+
+	public ZoneId getFuso() {
+		return fuso;
+	}
+
+	public void setFuso(ZoneId fuso) {
+		this.fuso = fuso;
 	}
 
 	public StatusEvento getStatus() {

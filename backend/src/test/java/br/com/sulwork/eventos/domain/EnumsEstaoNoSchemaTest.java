@@ -30,8 +30,8 @@ class EnumsEstaoNoSchemaTest {
 	@EnumSource(TipoEvento.class)
 	void bancoAceitaTodoTipoDeEvento(TipoEvento tipo) {
 		assertThatCode(() -> jdbc.update("""
-				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, status)
-				VALUES ('Evento', ?, '2026-12-01 12:00', '2026-11-30 12:00', 'ABERTO')""", tipo.name()))
+				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, fuso, status)
+				VALUES ('Evento', ?, '2026-12-01 12:00', '2026-11-30 12:00', 'America/Sao_Paulo', 'ABERTO')""", tipo.name()))
 				.doesNotThrowAnyException();
 	}
 
@@ -39,8 +39,8 @@ class EnumsEstaoNoSchemaTest {
 	@EnumSource(StatusEvento.class)
 	void bancoAceitaTodoStatus(StatusEvento status) {
 		assertThatCode(() -> jdbc.update("""
-				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, status)
-				VALUES ('Evento', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', ?)""", status.name()))
+				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, fuso, status)
+				VALUES ('Evento', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', 'America/Sao_Paulo', ?)""", status.name()))
 				.doesNotThrowAnyException();
 	}
 
@@ -94,8 +94,8 @@ class EnumsEstaoNoSchemaTest {
 
 	private long inserirEvento() {
 		return jdbc.queryForObject("""
-				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, status)
-				VALUES ('Evento', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', 'ABERTO')
+				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, fuso, status)
+				VALUES ('Evento', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', 'America/Sao_Paulo', 'ABERTO')
 				RETURNING id""", Long.class);
 	}
 

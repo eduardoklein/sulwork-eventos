@@ -5,6 +5,7 @@ CREATE TABLE eventos (
     tipo             VARCHAR(30)   NOT NULL,
     data_hora        TIMESTAMP     NOT NULL,
     prazo_alteracoes TIMESTAMP     NOT NULL,
+    fuso             VARCHAR(50)   NOT NULL,
     status           VARCHAR(20)   NOT NULL,
     criado_em        TIMESTAMP     NOT NULL DEFAULT now(),
     atualizado_em    TIMESTAMP     NOT NULL DEFAULT now(),

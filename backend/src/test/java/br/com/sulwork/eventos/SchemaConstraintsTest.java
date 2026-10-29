@@ -63,16 +63,16 @@ class SchemaConstraintsTest {
 	@Test
 	void statusForaDaListaEhRejeitado() {
 		assertThatThrownBy(() -> jdbc.update("""
-				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, status)
-				VALUES ('Almoço', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', 'EXPLODIDO')"""))
+				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, fuso, status)
+				VALUES ('Almoço', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', 'America/Sao_Paulo', 'EXPLODIDO')"""))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	@Test
 	void prazoDepoisDaDataDoEventoEhRejeitado() {
 		assertThatThrownBy(() -> jdbc.update("""
-				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, status)
-				VALUES ('Almoço', 'ALMOCO', '2026-12-01 12:00', '2026-12-02 12:00', 'ABERTO')"""))
+				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, fuso, status)
+				VALUES ('Almoço', 'ALMOCO', '2026-12-01 12:00', '2026-12-02 12:00', 'America/Sao_Paulo', 'ABERTO')"""))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
@@ -144,8 +144,8 @@ class SchemaConstraintsTest {
 
 	private long inserirEvento() {
 		return jdbc.queryForObject("""
-				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, status)
-				VALUES ('Almoço', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', 'ABERTO')
+				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, fuso, status)
+				VALUES ('Almoço', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', 'America/Sao_Paulo', 'ABERTO')
 				RETURNING id""", Long.class);
 	}
 
