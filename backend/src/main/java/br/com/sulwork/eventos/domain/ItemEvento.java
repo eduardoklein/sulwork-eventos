@@ -3,6 +3,8 @@ package br.com.sulwork.eventos.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -43,12 +45,14 @@ public class ItemEvento {
 	private boolean obrigatorio;
 
 	@ElementCollection
+	@BatchSize(size = 50)
 	@CollectionTable(name = "item_alergenos", joinColumns = @JoinColumn(name = "item_id"))
 	@Column(name = "alergeno", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Set<Alergeno> alergenos = new HashSet<>();
 
 	@ElementCollection
+	@BatchSize(size = 50)
 	@CollectionTable(name = "item_caracteristicas", joinColumns = @JoinColumn(name = "item_id"))
 	@Column(name = "caracteristica", nullable = false)
 	@Enumerated(EnumType.STRING)

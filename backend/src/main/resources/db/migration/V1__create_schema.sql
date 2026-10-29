@@ -42,6 +42,7 @@ CREATE TABLE itens_evento (
     CONSTRAINT ck_itens_quantidade CHECK (quantidade_necessaria > 0)
 );
 
+CREATE UNIQUE INDEX uq_itens_categoria_nome ON itens_evento (categoria_id, lower(nome));
 CREATE INDEX idx_itens_evento_evento ON itens_evento (evento_id);
 CREATE INDEX idx_itens_evento_categoria ON itens_evento (categoria_id);
 

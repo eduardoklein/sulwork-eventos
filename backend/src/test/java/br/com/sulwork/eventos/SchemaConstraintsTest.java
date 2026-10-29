@@ -102,6 +102,28 @@ class SchemaConstraintsTest {
 	}
 
 	@Test
+	void nomeDeItemRepetidoNaMesmaCategoriaEhRejeitadoSemDiferenciarMaiusculas() {
+		long evento = inserirEvento();
+		long categoria = inserirCategoria(evento, "Bebidas");
+		inserirItem(evento, categoria, 5);
+
+		assertThatThrownBy(() -> jdbc.update("""
+				INSERT INTO itens_evento (evento_id, categoria_id, nome, quantidade_necessaria)
+				VALUES (?, ?, 'SUCO', 3)""", evento, categoria))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void mesmoNomeDeItemEmCategoriasDiferentesEhAceito() {
+		long evento = inserirEvento();
+
+		assertThatCode(() -> {
+			inserirItem(evento, inserirCategoria(evento, "Bebidas"), 5);
+			inserirItem(evento, inserirCategoria(evento, "Sobremesas"), 5);
+		}).doesNotThrowAnyException();
+	}
+
+	@Test
 	void itemSemCategoriaEhRejeitado() {
 		long evento = inserirEvento();
 
