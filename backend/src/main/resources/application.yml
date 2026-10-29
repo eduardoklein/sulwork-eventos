@@ -1,6 +1,9 @@
 spring:
   application:
     name: eventos-api
+  web:
+    locale: pt-BR
+    locale-resolver: fixed
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/sulwork}
     username: ${DB_USERNAME:sulwork}
@@ -14,6 +17,9 @@ spring:
 
 server:
   port: ${PORT:8080}
+
+app:
+  fuso-padrao: ${APP_TIMEZONE:America/Sao_Paulo}
 
 springdoc:
   api-docs:

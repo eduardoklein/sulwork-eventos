@@ -32,6 +32,8 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 18 | O prazo vale até quando? | Até o instante marcado, inclusive. No instante exato do prazo ainda é possível alterar. Um segundo depois, o prazo está vencido. |
 | 19 | Como a API informa os erros? | Todo erro sai como `ProblemDetail` (RFC 7807), com a mensagem em `detail`. `400` é entrada malformada, `422` é regra de negócio quebrada, `409` é conflito com dado existente e `404` é recurso inexistente. No `400` de validação, o campo `erros` lista o campo e a mensagem de cada erro. Um erro inesperado sai como `500` com mensagem genérica, e o detalhe vai só para o log. |
 | 20 | Em que fuso o prazo e a data do evento são lidos? | Cada evento guarda o seu fuso (`America/Sao_Paulo` por padrão). A data e o prazo são horários de parede nesse fuso. O relógio do servidor fica em UTC e só informa o instante real, então o prazo vence na hora certa em qualquer servidor. As datas de criação e atualização (`criadoEm`, `atualizadoEm`) usam o fuso do servidor e são só informativas. |
+| 21 | O que se pode editar em cada status? | `RASCUNHO` e `ABERTO` editam tudo. Em `ABERTO`, o prazo novo precisa ainda não ter passado, senão o evento se encerraria sozinho. `ENCERRADO` edita só nome, descrição, tipo e data e hora. O prazo e o fuso ficam travados, porque não há reabertura. `REALIZADO` e `CANCELADO` não editam nada. |
+| 22 | Quais eventos podem ser excluídos? | Só `RASCUNHO`. Excluir um evento aberto apagaria, em cascata, inscrições e contribuições. Quem quer desfazer um evento aberto o cancela, e o cancelamento preserva o histórico. |
 
 ## Tecnologias escolhidas
 
