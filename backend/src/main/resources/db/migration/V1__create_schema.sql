@@ -25,11 +25,12 @@ CREATE TABLE categorias_evento (
     nome            VARCHAR(80)  NOT NULL,
     unidade         VARCHAR(20)  NOT NULL,
     meta_quantidade INTEGER      NOT NULL DEFAULT 0,
-    CONSTRAINT uq_categorias_evento_nome UNIQUE (evento_id, nome),
     CONSTRAINT ck_categorias_unidade CHECK (unidade IN
         ('UNIDADE', 'PORCAO', 'GRAMA', 'MILILITRO')),
     CONSTRAINT ck_categorias_meta CHECK (meta_quantidade >= 0)
 );
+
+CREATE UNIQUE INDEX uq_categorias_evento_nome ON categorias_evento (evento_id, lower(nome));
 
 CREATE TABLE itens_evento (
     id                    BIGSERIAL PRIMARY KEY,

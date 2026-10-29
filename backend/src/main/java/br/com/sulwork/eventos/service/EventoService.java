@@ -61,11 +61,11 @@ public class EventoService {
 	}
 
 	public EventoResponse buscar(Long id) {
-		return resposta(buscarEntidade(id));
+		return resposta(buscarEntidadeSincronizada(id));
 	}
 
 	public EventoResponse atualizar(Long id, AtualizarEventoRequest request) {
-		Evento evento = buscarEntidade(id);
+		Evento evento = buscarEntidadeSincronizada(id);
 		StatusEvento status = evento.getStatus();
 		if (status == StatusEvento.REALIZADO || status == StatusEvento.CANCELADO) {
 			throw new BusinessRuleException("Um evento " + status.getDescricao().toLowerCase() + " não pode ser editado.");
@@ -90,7 +90,7 @@ public class EventoService {
 	}
 
 	public EventoResponse mudarStatus(Long id, MudarStatusRequest request) {
-		Evento evento = buscarEntidade(id);
+		Evento evento = buscarEntidadeSincronizada(id);
 		StatusEvento atual = evento.getStatus();
 		StatusEvento novo = request.novoStatus();
 		if (request.novoPrazoAlteracoes() != null && novo != StatusEvento.ABERTO) {
@@ -114,7 +114,7 @@ public class EventoService {
 	}
 
 	public void excluir(Long id) {
-		Evento evento = buscarEntidade(id);
+		Evento evento = buscarEntidadeSincronizada(id);
 		if (evento.getStatus() != StatusEvento.RASCUNHO) {
 			throw new BusinessRuleException(
 					"Só eventos em rascunho podem ser excluídos. Cancele o evento para desfazê-lo.");
@@ -131,7 +131,7 @@ public class EventoService {
 	}
 
 	/** Busca o evento já com o status em dia: se o prazo passou, ele aparece encerrado. */
-	private Evento buscarEntidade(Long id) {
+	public Evento buscarEntidadeSincronizada(Long id) {
 		Evento evento = eventos.findById(id).orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
 		evento.encerrarSePrazoExpirado(clock.instant());
 		return evento;

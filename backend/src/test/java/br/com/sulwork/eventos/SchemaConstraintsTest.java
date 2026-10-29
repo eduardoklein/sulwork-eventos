@@ -77,6 +77,22 @@ class SchemaConstraintsTest {
 	}
 
 	@Test
+	void nomeDeCategoriaRepetidoNoMesmoEventoEhRejeitadoSemDiferenciarMaiusculas() {
+		long evento = inserirEvento();
+		inserirCategoria(evento, "Bebidas");
+
+		assertThatThrownBy(() -> inserirCategoria(evento, "bebidas"))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void mesmoNomeDeCategoriaEmEventosDiferentesEhAceito() {
+		inserirCategoria(inserirEvento(), "Bebidas");
+
+		assertThatCode(() -> inserirCategoria(inserirEvento(), "Bebidas")).doesNotThrowAnyException();
+	}
+
+	@Test
 	void quantidadeNecessariaZeroEhRejeitada() {
 		long evento = inserirEvento();
 		long categoria = inserirCategoria(evento, "Bebidas");
