@@ -48,8 +48,16 @@ CREATE TABLE item_alergenos (
     alergeno VARCHAR(30) NOT NULL,
     PRIMARY KEY (item_id, alergeno),
     CONSTRAINT ck_item_alergenos_alergeno CHECK (alergeno IN
-        ('GLUTEN', 'LACTOSE', 'AMENDOIM', 'CASTANHAS', 'FRUTOS_DO_MAR', 'OVO',
-         'SOJA', 'ACUCAR_ADICIONADO', 'CARNE_ORIGEM_ANIMAL'))
+        ('GLUTEN', 'LACTOSE', 'AMENDOIM', 'CASTANHAS', 'FRUTOS_DO_MAR', 'PEIXE',
+         'OVO', 'SOJA'))
+);
+
+CREATE TABLE item_caracteristicas (
+    item_id        BIGINT      NOT NULL REFERENCES itens_evento (id) ON DELETE CASCADE,
+    caracteristica VARCHAR(30) NOT NULL,
+    PRIMARY KEY (item_id, caracteristica),
+    CONSTRAINT ck_item_caracteristicas_caracteristica CHECK (caracteristica IN
+        ('CARNE_ORIGEM_ANIMAL', 'ACUCAR_ADICIONADO', 'ALTO_SODIO'))
 );
 
 CREATE TABLE colaboradores (
@@ -66,8 +74,8 @@ CREATE TABLE colaborador_restricoes (
     PRIMARY KEY (colaborador_id, restricao),
     CONSTRAINT ck_colaborador_restricoes_restricao CHECK (restricao IN
         ('INTOLERANCIA_LACTOSE', 'CELIACO_SEM_GLUTEN', 'ALERGIA_AMENDOIM_CASTANHAS',
-         'ALERGIA_FRUTOS_DO_MAR', 'ALERGIA_OVO', 'ALERGIA_SOJA', 'DIABETICO_SEM_ACUCAR',
-         'VEGETARIANO', 'VEGANO'))
+         'ALERGIA_FRUTOS_DO_MAR', 'ALERGIA_PEIXE', 'ALERGIA_OVO', 'ALERGIA_SOJA',
+         'DIABETICO_SEM_ACUCAR', 'HIPERTENSO_POUCO_SODIO', 'VEGETARIANO', 'VEGANO'))
 );
 
 CREATE TABLE participantes_evento (
