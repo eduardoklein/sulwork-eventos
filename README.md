@@ -29,6 +29,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 15 | Todo item da lista de "alérgenos" é um alérgeno? | Não. Peixe é alérgeno, mas "carne de origem animal", "açúcar adicionado" e "rico em sal" não são. Separamos em dois campos: alérgenos e características alimentares. O enunciado só fala de alérgenos, e a interface mantém essa palavra. |
 | 16 | O vegetariano aceita ovo e laticínios? | Sim. Quem evita ovo ou leite marca a restrição própria ou escolhe vegano. |
 | 17 | O cardápio pode mudar com o evento `ABERTO`? | Sim, com duas proteções: não reduzir a quantidade de um item abaixo do total já contribuído, e não apagar um item que já tem contribuições. Assim o organizador corrige erros sem apagar o compromisso de alguém. |
+| 18 | O prazo vale até quando? | Até o instante marcado, inclusive. No instante exato do prazo ainda é possível alterar. Um segundo depois, o prazo está vencido. |
 
 ## Tecnologias escolhidas
 
