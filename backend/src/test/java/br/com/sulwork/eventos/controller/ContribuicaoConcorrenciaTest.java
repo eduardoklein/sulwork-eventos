@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
+import br.com.sulwork.eventos.CpfsDeTeste;
 import br.com.sulwork.eventos.TestcontainersConfiguration;
 import br.com.sulwork.eventos.domain.CategoriaEvento;
 import br.com.sulwork.eventos.domain.Colaborador;

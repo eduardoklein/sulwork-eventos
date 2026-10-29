@@ -32,6 +32,31 @@ public interface ItemEventoRepository extends JpaRepository<ItemEvento, Long> {
 			""")
 	List<ItemEvento> listar(@Param("eventoId") Long eventoId, @Param("categoriaId") Long categoriaId);
 
+	/**
+	 * Soma, no banco, o que cada categoria do evento precisa e o que já recebeu, separando itens obrigatórios e
+	 * opcionais. As contribuições são somadas por item antes do JOIN, para um item com várias contribuições não
+	 * multiplicar a soma das quantidades necessárias. Categorias sem itens aparecem com zeros.
+	 */
+	@Query(nativeQuery = true, value = """
+			SELECT cat.id AS "categoriaId",
+			       cat.nome AS "nome",
+			       cat.unidade AS "unidade",
+			       cat.meta_quantidade AS "metaQuantidade",
+			       COUNT(i.id) AS "totalItens",
+			       COALESCE(SUM(i.quantidade_necessaria) FILTER (WHERE i.obrigatorio), 0)::bigint AS "necessarioObrigatorios",
+			       COALESCE(SUM(i.quantidade_necessaria) FILTER (WHERE NOT i.obrigatorio), 0)::bigint AS "necessarioOpcionais",
+			       COALESCE(SUM(c.total) FILTER (WHERE i.obrigatorio), 0)::bigint AS "contribuidoObrigatorios",
+			       COALESCE(SUM(c.total) FILTER (WHERE NOT i.obrigatorio), 0)::bigint AS "contribuidoOpcionais"
+			FROM categorias_evento cat
+			LEFT JOIN itens_evento i ON i.categoria_id = cat.id
+			LEFT JOIN (SELECT item_id, SUM(quantidade) AS total FROM contribuicoes GROUP BY item_id) c
+			       ON c.item_id = i.id
+			WHERE cat.evento_id = :eventoId
+			GROUP BY cat.id, cat.nome, cat.unidade, cat.meta_quantidade
+			ORDER BY cat.id
+			""")
+	List<CoberturaDaCategoria> coberturaPorCategoria(@Param("eventoId") Long eventoId);
+
 	/** {@code ignorarId} nulo não ignora nenhum item. */
 	@Query("""
 			select count(i) > 0 from ItemEvento i

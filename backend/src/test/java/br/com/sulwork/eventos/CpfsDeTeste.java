@@ -1,12 +1,12 @@
-package br.com.sulwork.eventos.controller;
+package br.com.sulwork.eventos;
 
 /** Gera CPFs com dígitos verificadores corretos, para os testes precisarem de muitas pessoas diferentes. */
-final class CpfsDeTeste {
+public final class CpfsDeTeste {
 
 	private CpfsDeTeste() {
 	}
 
-	static String cpfValido(int semente) {
+	public static String cpfValido(int semente) {
 		String base = String.format("%09d", 100_000_000 + semente * 7);
 		String comPrimeiro = base + digito(base);
 		return comPrimeiro + digito(comPrimeiro);

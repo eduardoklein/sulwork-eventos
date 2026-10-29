@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.sulwork.eventos.CpfsDeTeste;
 import br.com.sulwork.eventos.TestcontainersConfiguration;
 import br.com.sulwork.eventos.domain.CategoriaEvento;
 import br.com.sulwork.eventos.domain.Colaborador;
