@@ -1,0 +1,22 @@
+# Plano de trabalho pessoal
+plano-de-desenvolvimento.md
+
+# Java / Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Node / Frontend
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Ambiente
+.env
+*.log
+
+# IDEs e sistema operacional
+.idea/
+*.iml
+.vscode/
+.DS_Store
