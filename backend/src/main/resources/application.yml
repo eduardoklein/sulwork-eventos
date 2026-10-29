@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: eventos-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/sulwork}
+    username: ${DB_USERNAME:sulwork}
+    password: ${DB_PASSWORD:sulwork}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8080}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
