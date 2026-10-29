@@ -3,6 +3,7 @@ package br.com.sulwork.eventos.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -34,6 +35,7 @@ public class Colaborador {
 	private String cpf;
 
 	@ElementCollection
+	@BatchSize(size = 50)
 	@CollectionTable(name = "colaborador_restricoes", joinColumns = @JoinColumn(name = "colaborador_id"))
 	@Column(name = "restricao", nullable = false)
 	@Enumerated(EnumType.STRING)
