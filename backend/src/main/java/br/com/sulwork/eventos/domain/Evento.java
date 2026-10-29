@@ -98,6 +98,17 @@ public class Evento {
 		}
 	}
 
+	/** Confere primeiro o status, depois o prazo. */
+	public void exigirContribuicoesAbertas(Instant agora) {
+		if (!status.allowsContributions()) {
+			throw new BusinessRuleException("Só um evento aberto aceita contribuições. Este evento está "
+					+ status.getDescricao().toLowerCase() + ".");
+		}
+		if (isPrazoExpirado(agora)) {
+			throw new BusinessRuleException("O prazo para alterações já passou.");
+		}
+	}
+
 	/** Um evento aberto cujo prazo passou vira encerrado. Devolve {@code true} se o status mudou. */
 	public boolean encerrarSePrazoExpirado(Instant agora) {
 		if (status == StatusEvento.ABERTO && isPrazoExpirado(agora)) {

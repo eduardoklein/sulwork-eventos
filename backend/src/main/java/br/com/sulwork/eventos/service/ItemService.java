@@ -75,7 +75,7 @@ public class ItemService {
 	public ItemResponse atualizar(Long eventoId, Long id, AtualizarItemRequest request) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
 		evento.exigirCardapioEditavel();
-		ItemEvento item = buscarEntidade(eventoId, id);
+		ItemEvento item = buscarEntidadeComLock(eventoId, id);
 		String nome = request.nome().strip();
 		exigirNomeLivre(item.getCategoria().getId(), nome, id);
 		long contribuida = contribuicoes.somarPorItem(id);
@@ -96,7 +96,7 @@ public class ItemService {
 	public void excluir(Long eventoId, Long id) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
 		evento.exigirCardapioEditavel();
-		ItemEvento item = buscarEntidade(eventoId, id);
+		ItemEvento item = buscarEntidadeComLock(eventoId, id);
 		if (contribuicoes.existsByItemId(id)) {
 			throw new BusinessRuleException("Não é possível excluir um item que já tem contribuições.");
 		}
@@ -105,6 +105,10 @@ public class ItemService {
 
 	private ItemEvento buscarEntidade(Long eventoId, Long id) {
 		return itens.buscar(id, eventoId).orElseThrow(() -> new ResourceNotFoundException("Item não encontrado."));
+	}
+
+	private ItemEvento buscarEntidadeComLock(Long eventoId, Long id) {
+		return itens.buscarComLock(id, eventoId).orElseThrow(() -> new ResourceNotFoundException("Item não encontrado."));
 	}
 
 	private ItemResponse resposta(ItemEvento item) {
