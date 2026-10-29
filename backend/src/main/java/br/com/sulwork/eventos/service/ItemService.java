@@ -58,7 +58,7 @@ public class ItemService {
 
 	public ItemResponse criar(Long eventoId, CriarItemRequest request) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
-		exigirCardapioEditavel(evento);
+		evento.exigirCardapioEditavel();
 		CategoriaEvento categoria = categorias.findByIdAndEventoId(request.categoriaId(), eventoId)
 				.orElseThrow(() -> new BusinessRuleException("Categoria não encontrada neste evento."));
 		String nome = request.nome().strip();
@@ -74,7 +74,7 @@ public class ItemService {
 
 	public ItemResponse atualizar(Long eventoId, Long id, AtualizarItemRequest request) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
-		exigirCardapioEditavel(evento);
+		evento.exigirCardapioEditavel();
 		ItemEvento item = buscarEntidade(eventoId, id);
 		String nome = request.nome().strip();
 		exigirNomeLivre(item.getCategoria().getId(), nome, id);
@@ -95,7 +95,7 @@ public class ItemService {
 
 	public void excluir(Long eventoId, Long id) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
-		exigirCardapioEditavel(evento);
+		evento.exigirCardapioEditavel();
 		ItemEvento item = buscarEntidade(eventoId, id);
 		if (contribuicoes.existsByItemId(id)) {
 			throw new BusinessRuleException("Não é possível excluir um item que já tem contribuições.");
@@ -114,13 +114,6 @@ public class ItemService {
 	private static <T> void substituir(Set<T> atual, Set<T> novo) {
 		atual.clear();
 		atual.addAll(novo == null ? new HashSet<>() : novo);
-	}
-
-	private void exigirCardapioEditavel(Evento evento) {
-		if (!evento.getStatus().allowsCatalogMutation()) {
-			throw new BusinessRuleException(
-					"Não é possível alterar o cardápio de um evento " + evento.getStatus().getDescricao().toLowerCase() + ".");
-		}
 	}
 
 	private void exigirNomeLivre(Long categoriaId, String nome, Long ignorarId) {

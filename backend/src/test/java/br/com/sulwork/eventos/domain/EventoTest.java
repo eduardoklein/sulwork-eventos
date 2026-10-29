@@ -1,6 +1,8 @@
 package br.com.sulwork.eventos.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -9,6 +11,8 @@ import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+
+import br.com.sulwork.eventos.exception.BusinessRuleException;
 
 class EventoTest {
 
@@ -90,6 +94,26 @@ class EventoTest {
 
 		assertThat(evento.encerrarSePrazoExpirado(PRAZO_EM_SAO_PAULO.plusSeconds(3600))).isFalse();
 		assertThat(evento.getStatus()).isEqualTo(status);
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = StatusEvento.class, names = { "RASCUNHO", "ABERTO" })
+	void cardapioEditavelEmRascunhoEAberto(StatusEvento status) {
+		Evento evento = novoEvento(SAO_PAULO);
+		evento.setStatus(status);
+
+		assertThatCode(evento::exigirCardapioEditavel).doesNotThrowAnyException();
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = StatusEvento.class, names = { "ENCERRADO", "REALIZADO", "CANCELADO" })
+	void cardapioNaoEditavelNosOutrosStatus(StatusEvento status) {
+		Evento evento = novoEvento(SAO_PAULO);
+		evento.setStatus(status);
+
+		assertThatThrownBy(evento::exigirCardapioEditavel)
+				.isInstanceOf(BusinessRuleException.class)
+				.hasMessage("Não é possível alterar o cardápio de um evento " + status.getDescricao().toLowerCase() + ".");
 	}
 
 	@Test

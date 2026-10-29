@@ -40,7 +40,7 @@ public class CategoriaService {
 
 	public CategoriaResponse criar(Long eventoId, CategoriaRequest request) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
-		exigirCardapioEditavel(evento);
+		evento.exigirCardapioEditavel();
 		String nome = request.nome().strip();
 		exigirNomeLivre(eventoId, nome, null);
 
@@ -51,7 +51,7 @@ public class CategoriaService {
 
 	public CategoriaResponse atualizar(Long eventoId, Long id, CategoriaRequest request) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
-		exigirCardapioEditavel(evento);
+		evento.exigirCardapioEditavel();
 		CategoriaEvento categoria = buscarEntidade(eventoId, id);
 		String nome = request.nome().strip();
 		exigirNomeLivre(eventoId, nome, id);
@@ -68,7 +68,7 @@ public class CategoriaService {
 
 	public void excluir(Long eventoId, Long id) {
 		Evento evento = eventos.buscarEntidadeSincronizada(eventoId);
-		exigirCardapioEditavel(evento);
+		evento.exigirCardapioEditavel();
 		CategoriaEvento categoria = buscarEntidade(eventoId, id);
 		if (categorias.temItens(id)) {
 			throw new BusinessRuleException("Não é possível excluir uma categoria que ainda tem itens.");
@@ -83,13 +83,6 @@ public class CategoriaService {
 
 	private CategoriaResponse resumo(Long eventoId, Long id) {
 		return categorias.resumir(eventoId, id).getFirst();
-	}
-
-	private void exigirCardapioEditavel(Evento evento) {
-		if (!evento.getStatus().allowsCatalogMutation()) {
-			throw new BusinessRuleException(
-					"Não é possível alterar o cardápio de um evento " + evento.getStatus().getDescricao().toLowerCase() + ".");
-		}
 	}
 
 	private void exigirNomeLivre(Long eventoId, String nome, Long ignorarId) {

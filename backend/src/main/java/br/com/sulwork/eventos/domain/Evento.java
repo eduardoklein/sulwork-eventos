@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import br.com.sulwork.eventos.exception.BusinessRuleException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -88,6 +89,13 @@ public class Evento {
 
 	public boolean isAbertoParaContribuicoes(Instant agora) {
 		return status.allowsContributions() && !isPrazoExpirado(agora);
+	}
+
+	public void exigirCardapioEditavel() {
+		if (!status.allowsCatalogMutation()) {
+			throw new BusinessRuleException(
+					"Não é possível alterar o cardápio de um evento " + status.getDescricao().toLowerCase() + ".");
+		}
 	}
 
 	/** Um evento aberto cujo prazo passou vira encerrado. Devolve {@code true} se o status mudou. */
