@@ -36,6 +36,15 @@ class EnumsEstaoNoSchemaTest {
 	}
 
 	@ParameterizedTest
+	@EnumSource(StatusEvento.class)
+	void bancoAceitaTodoStatus(StatusEvento status) {
+		assertThatCode(() -> jdbc.update("""
+				INSERT INTO eventos (nome, tipo, data_hora, prazo_alteracoes, status)
+				VALUES ('Evento', 'ALMOCO', '2026-12-01 12:00', '2026-11-30 12:00', ?)""", status.name()))
+				.doesNotThrowAnyException();
+	}
+
+	@ParameterizedTest
 	@EnumSource(UnidadeMedida.class)
 	void bancoAceitaTodaUnidade(UnidadeMedida unidade) {
 		long evento = inserirEvento();

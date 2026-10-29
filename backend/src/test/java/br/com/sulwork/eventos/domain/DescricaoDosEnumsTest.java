@@ -11,6 +11,9 @@ class DescricaoDosEnumsTest {
 		for (TipoEvento valor : TipoEvento.values()) {
 			assertThat(valor.getDescricao()).isNotBlank();
 		}
+		for (StatusEvento valor : StatusEvento.values()) {
+			assertThat(valor.getDescricao()).isNotBlank();
+		}
 		for (UnidadeMedida valor : UnidadeMedida.values()) {
 			assertThat(valor.getDescricao()).isNotBlank();
 		}

@@ -28,6 +28,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 14 | Quem define a lista de restrições alimentares? | O enunciado não dá a lista. Nós definimos 11 restrições, escolhidas por serem comuns em eventos de empresa. |
 | 15 | Todo item da lista de "alérgenos" é um alérgeno? | Não. Peixe é alérgeno, mas "carne de origem animal", "açúcar adicionado" e "rico em sal" não são. Separamos em dois campos: alérgenos e características alimentares. O enunciado só fala de alérgenos, e a interface mantém essa palavra. |
 | 16 | O vegetariano aceita ovo e laticínios? | Sim. Quem evita ovo ou leite marca a restrição própria ou escolhe vegano. |
+| 17 | O cardápio pode mudar com o evento `ABERTO`? | Sim, com duas proteções: não reduzir a quantidade de um item abaixo do total já contribuído, e não apagar um item que já tem contribuições. Assim o organizador corrige erros sem apagar o compromisso de alguém. |
 
 ## Tecnologias escolhidas
 
@@ -62,3 +63,21 @@ Cada restrição de um participante conflita com alguns valores:
 | `VEGANO` | `FRUTOS_DO_MAR`, `PEIXE`, `LACTOSE`, `OVO` | `CARNE_ORIGEM_ANIMAL` |
 
 A matriz mora nos enums, em um só lugar. Mudar a matriz muda o sistema inteiro. Os `CHECK` do banco repetem as listas, e testes de integração garantem que enums e banco concordam.
+
+## Status do evento
+
+| Status | Pode ir para | Cardápio | Inscrições | Contribuições |
+| :--- | :--- | :---: | :---: | :---: |
+| `RASCUNHO` | `ABERTO`, `CANCELADO` | sim | não | não |
+| `ABERTO` | `ENCERRADO`, `CANCELADO` | sim | sim | sim |
+| `ENCERRADO` | `REALIZADO`, `CANCELADO` | não | não | não |
+| `REALIZADO` | nenhum | não | não | não |
+| `CANCELADO` | nenhum | não | não | não |
+
+- **`RASCUNHO`:** o organizador monta o cardápio. Ninguém se inscreve nem contribui, porque o cardápio ainda pode mudar.
+- **`ABERTO`:** o evento recebe inscrições e contribuições. O cardápio ainda pode ser ajustado, com as proteções da decisão 17.
+- **`ENCERRADO`:** o prazo passou ou o organizador encerrou. Tudo fica só para leitura, até o evento acontecer ou ser cancelado.
+- **`REALIZADO` e `CANCELADO`:** estados finais. Eles preservam o histórico.
+- **Sem reabertura.** Um evento encerrado não volta a `ABERTO`. Reabrir exigiria um novo prazo e deixaria a regra do prazo mais complexa.
+
+O enum `StatusEvento` guarda essas regras. Os services consultam o status e não repetem `if` próprios.
