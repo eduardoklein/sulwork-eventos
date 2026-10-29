@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,6 +22,7 @@ import br.com.sulwork.eventos.domain.TipoEvento;
 import br.com.sulwork.eventos.dto.AtualizarEventoRequest;
 import br.com.sulwork.eventos.dto.CriarEventoRequest;
 import br.com.sulwork.eventos.dto.EventoResponse;
+import br.com.sulwork.eventos.dto.MudarStatusRequest;
 import br.com.sulwork.eventos.service.EventoService;
 import jakarta.validation.Valid;
 
@@ -57,6 +59,11 @@ public class EventoController {
 	@PutMapping("/{id}")
 	EventoResponse atualizar(@PathVariable Long id, @Valid @RequestBody AtualizarEventoRequest request) {
 		return service.atualizar(id, request);
+	}
+
+	@PatchMapping("/{id}/status")
+	EventoResponse mudarStatus(@PathVariable Long id, @Valid @RequestBody MudarStatusRequest request) {
+		return service.mudarStatus(id, request);
 	}
 
 	@DeleteMapping("/{id}")

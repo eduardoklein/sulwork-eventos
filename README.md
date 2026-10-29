@@ -34,6 +34,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 20 | Em que fuso o prazo e a data do evento são lidos? | Cada evento guarda o seu fuso (`America/Sao_Paulo` por padrão). A data e o prazo são horários de parede nesse fuso. O relógio do servidor fica em UTC e só informa o instante real, então o prazo vence na hora certa em qualquer servidor. As datas de criação e atualização (`criadoEm`, `atualizadoEm`) usam o fuso do servidor e são só informativas. |
 | 21 | O que se pode editar em cada status? | `RASCUNHO` e `ABERTO` editam tudo. Em `ABERTO`, o prazo novo precisa ainda não ter passado, senão o evento se encerraria sozinho. `ENCERRADO` edita só nome, descrição, tipo e data e hora. O prazo e o fuso ficam travados, porque não há reabertura. `REALIZADO` e `CANCELADO` não editam nada. |
 | 22 | Quais eventos podem ser excluídos? | Só `RASCUNHO`. Excluir um evento aberto apagaria, em cascata, inscrições e contribuições. Quem quer desfazer um evento aberto o cancela, e o cancelamento preserva o histórico. |
+| 23 | Como o status muda, e quando um evento vira `REALIZADO`? | Pela rota `PATCH /api/eventos/{id}/status`, que respeita a máquina de estados. Um evento só vira `REALIZADO` na data e hora marcadas, lidas no fuso do evento, ou depois. O cancelamento é livre a qualquer momento. Ao abrir um rascunho, a chamada pode trazer um prazo novo. Nas outras mudanças, o prazo novo é recusado. Uma mudança inválida devolve 422 com as transições permitidas. |
 
 ## Tecnologias escolhidas
 

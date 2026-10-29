@@ -81,6 +81,11 @@ public class Evento {
 		return agora.isAfter(prazoAlteracoes.atZone(fuso).toInstant());
 	}
 
+	/** A data e a hora do evento são lidas no fuso do evento. No instante marcado, o evento já começou. */
+	public boolean jaComecou(Instant agora) {
+		return !agora.isBefore(dataHora.atZone(fuso).toInstant());
+	}
+
 	public boolean isAbertoParaContribuicoes(Instant agora) {
 		return status.allowsContributions() && !isPrazoExpirado(agora);
 	}

@@ -10,20 +10,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,28 +29,15 @@ import br.com.sulwork.eventos.domain.StatusEvento;
 import br.com.sulwork.eventos.domain.TipoEvento;
 import br.com.sulwork.eventos.repository.EventoRepository;
 
-@Import({ TestcontainersConfiguration.class, EventoApiTest.RelogioFixo.class })
+@Import({ TestcontainersConfiguration.class, RelogioFixoConfig.class })
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 class EventoApiTest {
 
-	/** 12:00 em São Paulo no dia 1º de novembro de 2026. */
-	private static final Instant AGORA = Instant.parse("2026-11-01T15:00:00Z");
 	private static final String DATA_DO_EVENTO = "2026-12-01T12:00:00";
 	private static final String PRAZO_FUTURO = "2026-11-30T12:00:00";
 	private static final String PRAZO_VENCIDO = "2026-10-30T12:00:00";
-
-	@TestConfiguration
-	static class RelogioFixo {
-
-		@Bean
-		@Primary
-		Clock clockFixo() {
-			return Clock.fixed(AGORA, ZoneOffset.UTC);
-		}
-
-	}
 
 	@Autowired
 	private MockMvc mvc;

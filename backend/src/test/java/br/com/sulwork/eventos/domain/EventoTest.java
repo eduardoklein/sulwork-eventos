@@ -55,6 +55,16 @@ class EventoTest {
 	}
 
 	@Test
+	void eventoSoComecaNoInstanteMarcadoNoFusoDoEvento() {
+		Evento evento = novoEvento(SAO_PAULO);
+		Instant inicio = Instant.parse("2026-12-01T15:00:00Z");
+
+		assertThat(evento.jaComecou(inicio.minusSeconds(1))).isFalse();
+		assertThat(evento.jaComecou(inicio)).isTrue();
+		assertThat(evento.jaComecou(inicio.plusSeconds(1))).isTrue();
+	}
+
+	@Test
 	void eventoAbertoNoPrazoAceitaContribuicoes() {
 		Evento evento = novoEvento(SAO_PAULO);
 		evento.setStatus(StatusEvento.ABERTO);

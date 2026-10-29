@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import br.com.sulwork.eventos.domain.TipoEvento;
 import br.com.sulwork.eventos.dto.AtualizarEventoRequest;
 import br.com.sulwork.eventos.dto.CriarEventoRequest;
 import br.com.sulwork.eventos.dto.EventoResponse;
+import br.com.sulwork.eventos.dto.MudarStatusRequest;
 import br.com.sulwork.eventos.exception.BusinessRuleException;
 import br.com.sulwork.eventos.exception.ResourceNotFoundException;
 import br.com.sulwork.eventos.repository.EventoRepository;
@@ -88,6 +90,30 @@ public class EventoService {
 		return resposta(eventos.saveAndFlush(evento));
 	}
 
+	public EventoResponse mudarStatus(Long id, MudarStatusRequest request) {
+		Evento evento = buscarEntidade(id);
+		StatusEvento atual = evento.getStatus();
+		StatusEvento novo = request.novoStatus();
+		if (request.novoPrazoAlteracoes() != null && novo != StatusEvento.ABERTO) {
+			throw new BusinessRuleException("O novo prazo só vale ao abrir o evento.");
+		}
+		if (!atual.canTransitionTo(novo)) {
+			throw new BusinessRuleException(transicaoInvalida(atual, novo));
+		}
+		if (novo == StatusEvento.ABERTO) {
+			if (request.novoPrazoAlteracoes() != null) {
+				exigirPrazoAteADataDoEvento(request.novoPrazoAlteracoes(), evento.getDataHora());
+				evento.setPrazoAlteracoes(request.novoPrazoAlteracoes());
+			}
+			exigirPrazoNoFuturo(evento);
+		}
+		if (novo == StatusEvento.REALIZADO && !evento.jaComecou(clock.instant())) {
+			throw new BusinessRuleException("Um evento só pode ser marcado como realizado depois da data e hora marcadas.");
+		}
+		evento.setStatus(novo);
+		return resposta(eventos.saveAndFlush(evento));
+	}
+
 	public void excluir(Long id) {
 		Evento evento = buscarEntidade(id);
 		if (evento.getStatus() != StatusEvento.RASCUNHO) {
@@ -116,6 +142,16 @@ public class EventoService {
 		if (evento.isPrazoExpirado(agora)) {
 			throw new BusinessRuleException("Um evento aberto precisa de um prazo que ainda não passou.");
 		}
+	}
+
+	private static String transicaoInvalida(StatusEvento atual, StatusEvento novo) {
+		String base = "Não é possível passar de " + atual.getDescricao() + " para " + novo.getDescricao() + ". ";
+		if (atual.isTerminal()) {
+			return base + "Esse status é final.";
+		}
+		String permitidas = atual.allowedTransitions().stream().sorted()
+				.map(StatusEvento::getDescricao).collect(Collectors.joining(", "));
+		return base + "Transições permitidas: " + permitidas + ".";
 	}
 
 	private static ZoneId fusoOu(String fuso, ZoneId padrao) {
