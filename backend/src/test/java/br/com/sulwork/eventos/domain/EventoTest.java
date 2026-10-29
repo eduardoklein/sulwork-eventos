@@ -65,6 +65,34 @@ class EventoTest {
 	}
 
 	@Test
+	void eventoAbertoComPrazoVencidoViraEncerrado() {
+		Evento evento = novoEvento(SAO_PAULO);
+		evento.setStatus(StatusEvento.ABERTO);
+
+		assertThat(evento.encerrarSePrazoExpirado(PRAZO_EM_SAO_PAULO.plusSeconds(1))).isTrue();
+		assertThat(evento.getStatus()).isEqualTo(StatusEvento.ENCERRADO);
+	}
+
+	@Test
+	void eventoAbertoNoPrazoOuNoInstanteExatoNaoEEncerrado() {
+		Evento evento = novoEvento(SAO_PAULO);
+		evento.setStatus(StatusEvento.ABERTO);
+
+		assertThat(evento.encerrarSePrazoExpirado(PRAZO_EM_SAO_PAULO)).isFalse();
+		assertThat(evento.getStatus()).isEqualTo(StatusEvento.ABERTO);
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = StatusEvento.class, names = "ABERTO", mode = EnumSource.Mode.EXCLUDE)
+	void soEventoAbertoEEncerradoPeloPrazo(StatusEvento status) {
+		Evento evento = novoEvento(SAO_PAULO);
+		evento.setStatus(status);
+
+		assertThat(evento.encerrarSePrazoExpirado(PRAZO_EM_SAO_PAULO.plusSeconds(3600))).isFalse();
+		assertThat(evento.getStatus()).isEqualTo(status);
+	}
+
+	@Test
 	void eventoAbertoNoPrazoAceitaContribuicoes() {
 		Evento evento = novoEvento(SAO_PAULO);
 		evento.setStatus(StatusEvento.ABERTO);

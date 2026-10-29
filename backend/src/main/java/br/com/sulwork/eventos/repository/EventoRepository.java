@@ -13,6 +13,8 @@ import br.com.sulwork.eventos.domain.TipoEvento;
 
 public interface EventoRepository extends JpaRepository<Evento, Long> {
 
+	List<Evento> findByStatus(StatusEvento status);
+
 	/** Cada filtro é opcional. {@code ate} é exclusivo. */
 	@Query("""
 			select e from Evento e

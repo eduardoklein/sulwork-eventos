@@ -53,14 +53,13 @@ public class EventoService {
 		return resposta(eventos.save(evento));
 	}
 
-	@Transactional(readOnly = true)
 	public List<EventoResponse> listar(StatusEvento status, TipoEvento tipo, LocalDate de, LocalDate ate) {
+		encerrarVencidos();
 		LocalDateTime inicio = de == null ? null : de.atStartOfDay();
 		LocalDateTime fim = ate == null ? null : ate.plusDays(1).atStartOfDay();
 		return eventos.filtrar(status, tipo, inicio, fim).stream().map(this::resposta).toList();
 	}
 
-	@Transactional(readOnly = true)
 	public EventoResponse buscar(Long id) {
 		return resposta(buscarEntidade(id));
 	}
@@ -123,8 +122,19 @@ public class EventoService {
 		eventos.delete(evento);
 	}
 
+	/** Encerra os eventos abertos cujo prazo passou. Devolve quantos foram encerrados. */
+	public int encerrarVencidos() {
+		Instant agora = clock.instant();
+		return (int) eventos.findByStatus(StatusEvento.ABERTO).stream()
+				.filter(evento -> evento.encerrarSePrazoExpirado(agora))
+				.count();
+	}
+
+	/** Busca o evento já com o status em dia: se o prazo passou, ele aparece encerrado. */
 	private Evento buscarEntidade(Long id) {
-		return eventos.findById(id).orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
+		Evento evento = eventos.findById(id).orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
+		evento.encerrarSePrazoExpirado(clock.instant());
+		return evento;
 	}
 
 	private EventoResponse resposta(Evento evento) {

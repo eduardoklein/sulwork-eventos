@@ -90,6 +90,15 @@ public class Evento {
 		return status.allowsContributions() && !isPrazoExpirado(agora);
 	}
 
+	/** Um evento aberto cujo prazo passou vira encerrado. Devolve {@code true} se o status mudou. */
+	public boolean encerrarSePrazoExpirado(Instant agora) {
+		if (status == StatusEvento.ABERTO && isPrazoExpirado(agora)) {
+			status = StatusEvento.ENCERRADO;
+			return true;
+		}
+		return false;
+	}
+
 	public Long getId() {
 		return id;
 	}
