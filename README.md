@@ -18,7 +18,8 @@ Aplicação para organizar eventos de alimentação da Sulwork: cafés da manhã
 12. [Funcionalidade livre: sugestões do que levar](#funcionalidade-livre-sugestões-do-que-levar)
 13. [Documentação da API e CORS](#documentação-da-api-e-cors)
 14. [Dados de demonstração](#dados-de-demonstração)
-15. [Decisões e ambiguidades](#decisões-e-ambiguidades)
+15. [Uso de IA](#uso-de-ia)
+16. [Decisões e ambiguidades](#decisões-e-ambiguidades)
 
 ## O problema
 
@@ -370,6 +371,28 @@ Quem avalia abre a aplicação e já vê o sistema funcionando, sem cadastrar na
 - **Pessoas fictícias.** Os nomes são inventados, e os CPFs passam na conta dos dígitos verificadores mas não pertencem a ninguém.
 - **Pasta separada, e uma chave para desligar.** Os dados ficam em `db/demo`, e não junto das migrations normais. A variável `APP_DEMO_DATA` (padrão `true`) liga e desliga a pasta. Os testes desligam, porque assumem um banco vazio. Para publicar sem dados de exemplo, defina `APP_DEMO_DATA=false` antes da primeira subida: desligar depois de aplicada faz o Flyway reclamar de uma migration que sumiu, e o jeito é recriar o banco.
 - **Versão alta.** A migration tem a versão 1000, para nunca colidir com as migrations futuras do schema.
+
+## Uso de IA
+
+**Ferramenta.** Usei o Claude Code, da Anthropic, com os modelos Claude Sonnet no dia a dia e Claude Opus na revisão do backend. Não usei outra ferramenta de IA.
+
+**Em quais etapas ela ajudou.** Em todas, do plano à publicação. Antes de escrever código, a IA me ajudou a montar um plano em passos pequenos e a listar as ambiguidades do enunciado. Depois, escreveu a maior parte do backend, do frontend, dos testes, dos `Dockerfile` e do texto deste README, sempre um passo por vez. Ela também revisou o backend inteiro, procurando erros, e achou condições de corrida que eu não tinha visto.
+
+**Como trabalhamos.** Em cada passo, a IA lia o plano, trazia as dúvidas em aberto com uma recomendação, e eu respondia. Só então ela escrevia o código e os testes, e registrava a decisão na tabela do README. Antes de cada commit, ela mostrava o que mudou e o que foi verificado, e eu autorizava. Nenhum commit foi feito sem eu pedir. Quando aparecia um defeito, o combinado era escrever primeiro um teste que falha por causa dele, e só depois corrigir.
+
+**Uma sugestão que aceitei.** Na revisão do backend, a IA achou três condições de corrida: o mesmo CPF novo inscrito por duas pessoas ao mesmo tempo, uma categoria apagada (ou com a unidade trocada) enquanto um item entrava nela, e o encerramento por prazo desfazendo uma edição feita no meio. Aceitei as três correções porque cada achado veio com um teste que falhava antes e passava depois, e porque os testes seguram a transação aberta de propósito, então não dependem de sorte. Uma das correções foi trocar o lock do Hibernate por um `SELECT ... FOR UPDATE` nativo na categoria, pois o lock do Hibernate não esperava uma inserção que só tem chave estrangeira.
+
+**Sugestões que mudei ou rejeitei.**
+- **A pontuação das sugestões.** O primeiro desenho somava pontos por regra, e o total passava de 100 (até 115, ou 140 para quem tem restrições). Apontei que isso confunde quem lê "130 de quê?". A prioridade passou a ir de 0 a 100, e a conta passou a dividir os pontos pelo máximo da pessoa.
+- **A inscrição de uma pessoa.** O primeiro desenho pedia o CPF junto com os outros campos. Mudei: o CPF vem primeiro e sozinho, porque é ele que diz se a pessoa já tem cadastro. Se tem, os dados guardados aparecem sem permitir edição. Decidi também que um erro de inscrição nunca altera uma pessoa já cadastrada, e que a edição da pessoa fica em uma janela só dela.
+- **Os nomes do código.** O código começou com nomes em português. Mudei de ideia e pedi a troca para o inglês, ficando em português só os cinco status do enunciado, o README, os commits e os textos da interface. Foi um commit de renomeação à parte.
+- **Identificadores.** Perguntei se valia usar UUID para algo interno. Concluímos que não, e os identificadores ficaram numéricos.
+
+**Onde precisei de mais julgamento próprio.**
+- **As ambiguidades do enunciado.** Cada regra aberta virou uma pergunta minha e uma decisão registrada: como o prazo e o status ficam coerentes, quais eventos se excluem, o que se edita em cada situação, o que é um item seguro e como se mede a cobertura. A IA propunha opções, mas a escolha foi minha, e a tabela de decisões mostra o porquê de cada uma.
+- **O fuso horário.** Antes de decidir, pedi para conferir se a empresa trabalha em vários fusos. Decidi que cada evento guarda o seu fuso, e que o prazo vale no fuso do evento.
+- **A funcionalidade livre.** Ela resolve um problema real: a pessoa entra no evento e não sabe o que levar. As regras de pontuação são poucas e simples de propósito, para eu conseguir explicá-las.
+- **Os erros da IA.** A IA errou, e o que pegou foi verificar, e não confiar. Um script cortou a primeira migration pela metade, e ela foi restaurada do Git. Ao abrir o sistema no navegador de verdade, a tela mostrava "faltam N para a meta" com a conta errada, juntava os motivos das sugestões com ponto duplo e deixava os botões "Levar" apagados depois do primeiro uso. No Docker, toda escrita pela interface respondia 403, por causa da porta no cabeçalho `Host` do nginx. Nenhum teste automático pegou esses quatro. Em cada caso, escrevemos primeiro o teste que falha, corrigimos e registramos no histórico de commits.
 
 ## Decisões e ambiguidades
 
