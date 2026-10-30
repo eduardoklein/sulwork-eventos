@@ -2,6 +2,17 @@
 
 Aplicação para organizar eventos de alimentação da Sulwork: cafés da manhã, almoços, lanches e confraternizações em que cada pessoa leva alguma coisa.
 
+## Links
+
+| O quê | Endereço |
+| :--- | :--- |
+| Aplicação publicada | https://sulwork-eventos.onrender.com |
+| Documentação da API (Swagger) | https://sulwork-eventos.onrender.com/swagger-ui.html |
+| Contrato OpenAPI | https://sulwork-eventos.onrender.com/v3/api-docs |
+| Repositório | https://github.com/eduardoklein/sulwork-eventos |
+
+A aplicação roda no plano gratuito do Render. **O primeiro acesso depois de um tempo parado demora até 2 minutos**, pois os serviços dormem. Veja os limites em [Publicação no Render](#publicação-no-render).
+
 ## Índice
 
 1. [O problema](#o-problema)
