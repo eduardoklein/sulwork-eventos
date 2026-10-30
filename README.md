@@ -385,7 +385,7 @@ A aplicação é publicada no Render, no **plano gratuito**, por um arquivo só:
 
 **Como publicar.** No painel do Render: **New > Blueprint**, escolha este repositório e confirme. O Render lê o `render.yaml`, cria os três recursos e faz o primeiro deploy. Na primeira subida, o Flyway cria as tabelas e os dados de demonstração.
 
-**Configuração.** O CORS só libera a origem da interface publicada (`APP_CORS_ALLOWED_ORIGINS`). Os nomes dos serviços formam os endereços (`https://sulwork-eventos.onrender.com` e `https://sulwork-eventos-api.onrender.com`). Se o Render acrescentar um sufixo a um nome que já está em uso, três valores precisam acompanhar o endereço novo: `BACKEND_URL`, `BACKEND_HOST_HEADER` e `APP_CORS_ALLOWED_ORIGINS`.
+**Configuração.** O CORS só libera a origem da interface publicada (`APP_CORS_ALLOWED_ORIGINS`). Os nomes dos serviços formam os endereços. A interface ficou em `https://sulwork-eventos.onrender.com`. O nome `sulwork-eventos-api` já era de outro serviço, então o Render deu um sufixo à API: `https://sulwork-eventos-api-ap04.onrender.com`. Por isso `BACKEND_URL` e `BACKEND_HOST_HEADER` usam o endereço com sufixo. Se um nome ganhar sufixo, esses dois valores e `APP_CORS_ALLOWED_ORIGINS` precisam acompanhar o endereço novo. Confira sempre os endereços no painel do Render.
 
 **Limites do plano gratuito.** Quem avalia precisa saber destes quatro pontos:
 
