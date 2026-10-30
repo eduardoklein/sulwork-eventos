@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import { ApiError } from '../../api/client'
-import { useNotify } from '../../notifications/context'
+import { useAction } from '../../lib/useAction'
 import { ConfirmDialog } from '../../ui/ConfirmDialog'
 
 /** Asks before deleting a category or an item. `remove` calls the API. It is mounted only while open. */
@@ -21,25 +19,20 @@ export function DeleteDialog({
   onDeleted: () => void
   onClose: () => void
 }) {
-  const notify = useNotify()
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { busy, message, run } = useAction()
 
-  const confirm = async () => {
-    setBusy(true)
-    try {
-      await remove()
-      notify(done, 'success')
-      onDeleted()
-      onClose()
-    } catch (failure) {
-      setError(failure instanceof ApiError ? failure.message : 'Não foi possível excluir.')
-      setBusy(false)
-    }
-  }
+  const confirm = () =>
+    run(remove, {
+      done,
+      failed: 'Não foi possível excluir.',
+      onDone: () => {
+        onDeleted()
+        onClose()
+      },
+    })
 
   return (
-    <ConfirmDialog open title={title} confirmLabel={confirmLabel} danger busy={busy} error={error} onConfirm={confirm} onCancel={onClose}>
+    <ConfirmDialog open title={title} confirmLabel={confirmLabel} danger busy={busy} error={message} onConfirm={confirm} onCancel={onClose}>
       <p>{text}</p>
     </ConfirmDialog>
   )

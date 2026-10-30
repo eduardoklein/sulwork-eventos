@@ -4,6 +4,7 @@ import { labelFor, useDomainOptions } from '../../domain/context'
 import type { Category, Item } from '../../types/api'
 import { Chip } from '../../ui/Chip'
 import { Meter } from '../../ui/Meter'
+import { RowActions } from '../../ui/RowActions'
 import { Section } from '../../ui/Section'
 import { buttonClass } from '../../ui/styles'
 import { DeleteDialog } from './DeleteDialog'
@@ -140,25 +141,14 @@ function ItemRow({
         <p className="mt-1 text-sm font-semibold">{item.coveredPercentage}%</p>
       </div>
       {editable && (
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <button type="button" aria-label={`Editar ${item.name}`} onClick={onEdit} className={buttonClass('secondary')}>
-            Editar
-          </button>
-          <button
-            type="button"
-            aria-label={`Excluir ${item.name}`}
-            disabled={hasContributions}
-            aria-describedby={hasContributions ? `item-${item.id}-locked` : undefined}
-            onClick={onDelete}
-            className={buttonClass('danger')}
-          >
-            Excluir
-          </button>
-          {hasContributions && (
-            <span id={`item-${item.id}-locked`} className="text-sm text-ink-soft">
-              Só dá para excluir um item sem contribuições.
-            </span>
-          )}
+        <div className="mt-2">
+          <RowActions
+            editName={`Editar ${item.name}`}
+            deleteName={`Excluir ${item.name}`}
+            lockedReason={hasContributions ? 'Só dá para excluir um item sem contribuições.' : undefined}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         </div>
       )}
     </li>

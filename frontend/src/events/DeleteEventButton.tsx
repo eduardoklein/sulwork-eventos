@@ -1,34 +1,29 @@
 import { useState } from 'react'
-import { ApiError, deleteEvent } from '../api/client'
-import { useNotify } from '../notifications/context'
+import { deleteEvent } from '../api/client'
+import { useAction } from '../lib/useAction'
 import { EVENTS_ROUTE, routeHash } from '../router/route'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { buttonClass } from '../ui/styles'
 
 export function DeleteEventButton({ eventId }: { eventId: number }) {
-  const notify = useNotify()
   const [asking, setAsking] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { busy, message, reset, run } = useAction()
 
-  const confirm = async () => {
-    setBusy(true)
-    try {
-      await deleteEvent(eventId)
-      notify('Evento excluído.', 'success')
-      window.location.hash = routeHash(EVENTS_ROUTE)
-    } catch (failure) {
-      setError(failure instanceof ApiError ? failure.message : 'Não foi possível excluir o evento.')
-      setBusy(false)
-    }
-  }
+  const confirm = () =>
+    run(() => deleteEvent(eventId), {
+      done: 'Evento excluído.',
+      failed: 'Não foi possível excluir o evento.',
+      onDone: () => {
+        window.location.hash = routeHash(EVENTS_ROUTE)
+      },
+    })
 
   return (
     <>
       <button
         type="button"
         onClick={() => {
-          setError(null)
+          reset()
           setAsking(true)
         }}
         className={buttonClass('danger')}
@@ -41,7 +36,7 @@ export function DeleteEventButton({ eventId }: { eventId: number }) {
         confirmLabel="Excluir evento"
         danger
         busy={busy}
-        error={error}
+        error={message}
         onConfirm={confirm}
         onCancel={() => setAsking(false)}
       >

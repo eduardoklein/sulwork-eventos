@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { removeParticipant } from '../../api/client'
 import type { Contribution, DietaryAnalysis, FoodEvent, Participant } from '../../types/api'
 import { EmptyState } from '../../ui/EmptyState'
+import { Notice } from '../../ui/Notice'
 import { Section } from '../../ui/Section'
 import { buttonClass } from '../../ui/styles'
 import { DeleteDialog } from '../menu/DeleteDialog'
@@ -44,9 +45,7 @@ export function ParticipantsTab({
   return (
     <div>
       {!editable && (
-        <p className="mt-6 max-w-prose rounded-lg border border-line-strong bg-surface px-4 py-3 text-sm">
-          Só um evento aberto aceita mudanças nos participantes.
-        </p>
+        <Notice>Só um evento aberto aceita mudanças nos participantes.</Notice>
       )}
       <Section title="Participantes" action={participants.length > 0 ? enrollButton : undefined}>
         {participants.length === 0 ? (

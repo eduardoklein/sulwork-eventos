@@ -2,6 +2,7 @@ import { labelFor, useDomainOptions } from '../domain/context'
 import { formatDateTime } from '../lib/format'
 import type { DomainOptions, FoodEvent } from '../types/api'
 import { EmptyState } from '../ui/EmptyState'
+import { ErrorPanel } from '../ui/ErrorPanel'
 import { Meter } from '../ui/Meter'
 import { Section } from '../ui/Section'
 import { StatusPill } from '../ui/StatusPill'
@@ -19,12 +20,7 @@ export function EventsPage() {
   }
   if (list.status === 'error') {
     return (
-      <div role="alert" className="rounded-lg border border-danger bg-danger-soft px-6 py-5 text-danger-ink">
-        <p className="font-semibold">{list.message}</p>
-        <button type="button" onClick={retry} className={`${buttonClass('secondary')} mt-3`}>
-          Tentar de novo
-        </button>
-      </div>
+      <ErrorPanel message={list.message} onRetry={retry} />
     )
   }
   if (list.events.length === 0) {

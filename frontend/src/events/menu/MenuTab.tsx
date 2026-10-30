@@ -1,4 +1,5 @@
 import type { Category, DietaryAnalysis, FoodEvent, Item, Participant } from '../../types/api'
+import { Notice } from '../../ui/Notice'
 import { CategoriesSection } from './CategoriesSection'
 import { ItemsSection } from './ItemsSection'
 import { menuEditable } from './menuRules'
@@ -33,9 +34,7 @@ export function MenuTab({
   return (
     <section aria-label="Cardápio">
       {!editable && (
-        <p className="mt-6 max-w-prose rounded-lg border border-line-strong bg-surface px-4 py-3 text-sm">
-          O cardápio não muda mais, porque o evento não aceita alterações nele.
-        </p>
+        <Notice>O cardápio não muda mais, porque o evento não aceita alterações nele.</Notice>
       )}
       {participants.length > 0 && <ViewAsSelect participants={participants} value={viewer ? viewAs : null} onChange={onViewAsChange} />}
       <CategoriesSection eventId={event.id} categories={categories} editable={editable} onChanged={onChanged} />

@@ -3,6 +3,7 @@ import { deleteCategory } from '../../api/client'
 import { labelFor, useDomainOptions } from '../../domain/context'
 import type { Category } from '../../types/api'
 import { EmptyState } from '../../ui/EmptyState'
+import { RowActions } from '../../ui/RowActions'
 import { Section } from '../../ui/Section'
 import { buttonClass } from '../../ui/styles'
 import { CategoryDialog } from './CategoryDialog'
@@ -51,31 +52,13 @@ export function CategoriesSection({
                 <p className="text-sm text-ink-soft">{category.totalItems === 1 ? '1 item' : `${category.totalItems} itens`}</p>
               </div>
               {editable && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    aria-label={`Editar ${category.name}`}
-                    onClick={() => setDialog({ kind: 'form', category })}
-                    className={buttonClass('secondary')}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Excluir ${category.name}`}
-                    disabled={category.totalItems > 0}
-                    aria-describedby={category.totalItems > 0 ? `category-${category.id}-locked` : undefined}
-                    onClick={() => setDialog({ kind: 'delete', category })}
-                    className={buttonClass('danger')}
-                  >
-                    Excluir
-                  </button>
-                  {category.totalItems > 0 && (
-                    <span id={`category-${category.id}-locked`} className="basis-full text-sm text-ink-soft">
-                      Só dá para excluir uma categoria sem itens.
-                    </span>
-                  )}
-                </div>
+                <RowActions
+                  editName={`Editar ${category.name}`}
+                  deleteName={`Excluir ${category.name}`}
+                  lockedReason={category.totalItems > 0 ? 'Só dá para excluir uma categoria sem itens.' : undefined}
+                  onEdit={() => setDialog({ kind: 'form', category })}
+                  onDelete={() => setDialog({ kind: 'delete', category })}
+                />
               )}
             </li>
           ))}

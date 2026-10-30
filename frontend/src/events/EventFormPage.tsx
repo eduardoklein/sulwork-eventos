@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { ApiError, createEvent, updateEvent } from '../api/client'
-import { useNotify } from '../notifications/context'
+import { createEvent, updateEvent } from '../api/client'
+import { useAction } from '../lib/useAction'
 import { routeHash } from '../router/route'
 import type { FoodEvent } from '../types/api'
+import { ErrorPanel } from '../ui/ErrorPanel'
 import { buttonClass } from '../ui/styles'
 import { EventForm } from './EventForm'
 import {
@@ -14,7 +15,6 @@ import {
   validate,
   valuesOf,
   type EventFormValues,
-  type FormErrors,
 } from './eventFormValues'
 import { useEvent } from './useEvent'
 
@@ -45,12 +45,7 @@ function EditEvent({ eventId }: { eventId: number }) {
   }
   if (state.status === 'error') {
     return (
-      <div role="alert" className={alertClass}>
-        <p className="font-semibold">{state.message}</p>
-        <button type="button" onClick={retry} className={`${buttonClass('secondary')} mt-3`}>
-          Tentar de novo
-        </button>
-      </div>
+      <ErrorPanel message={state.message} onRetry={retry} />
     )
   }
   const rule = editRuleFor(state.event.status)
@@ -93,10 +88,7 @@ function SaveEvent({
   save: (values: EventFormValues) => Promise<FoodEvent>
   savedText: string
 }) {
-  const notify = useNotify()
-  const [saving, setSaving] = useState(false)
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [message, setMessage] = useState<string | null>(null)
+  const { busy, message, fieldErrors, reject, run } = useAction<keyof EventFormValues>()
   const messageRef = useRef<HTMLDivElement>(null)
 
   // The message is out of the person's sight when the form is long: move the focus to it.
@@ -104,28 +96,19 @@ function SaveEvent({
     if (message) messageRef.current?.focus()
   }, [message])
 
-  const submit = async (values: EventFormValues) => {
+  const submit = (values: EventFormValues) => {
     const missing = validate(values)
-    setErrors(missing)
     if (Object.keys(missing).length > 0) {
-      setMessage('Corrija os campos destacados.')
+      reject('Corrija os campos destacados.', missing)
       return
     }
-    setMessage(null)
-    setSaving(true)
-    try {
-      const saved = await save(values)
-      notify(savedText, 'success')
-      window.location.hash = routeHash({ name: 'event', id: saved.id, tab: 'summary' })
-    } catch (error) {
-      if (error instanceof ApiError) {
-        setErrors(error.fieldErrors as FormErrors)
-        setMessage(error.message)
-      } else {
-        setMessage('Não foi possível salvar o evento.')
-      }
-      setSaving(false)
-    }
+    void run(() => save(values), {
+      done: savedText,
+      failed: 'Não foi possível salvar o evento.',
+      onDone: (saved) => {
+        window.location.hash = routeHash({ name: 'event', id: saved.id, tab: 'summary' })
+      },
+    })
   }
 
   return (
@@ -135,7 +118,7 @@ function SaveEvent({
           {message}
         </div>
       )}
-      <EventForm initial={initial} errors={errors} saving={saving} submitLabel={submitLabel} creating={creating} rule={rule} onSubmit={submit} />
+      <EventForm initial={initial} errors={fieldErrors} saving={busy} submitLabel={submitLabel} creating={creating} rule={rule} onSubmit={submit} />
     </>
   )
 }

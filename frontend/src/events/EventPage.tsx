@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { routeHash, type EventTab } from '../router/route'
 import { EmptyState } from '../ui/EmptyState'
+import { ErrorPanel } from '../ui/ErrorPanel'
 import { buttonClass } from '../ui/styles'
 import { EventHeader } from './EventHeader'
 import { EventTabs } from './EventTabs'
@@ -30,12 +31,7 @@ export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
         action={<a href="#/events" className={buttonClass('primary')}>Ver os eventos</a>}
       />
     ) : (
-      <div role="alert" className="rounded-lg border border-danger bg-danger-soft px-6 py-5 text-danger-ink">
-        <p className="font-semibold">{state.message}</p>
-        <button type="button" onClick={retry} className={`${buttonClass('secondary')} mt-3`}>
-          Tentar de novo
-        </button>
-      </div>
+      <ErrorPanel message={state.message} onRetry={retry} />
     )
   }
   const { event, categories, items, participants, contributions, analysis } = state.data

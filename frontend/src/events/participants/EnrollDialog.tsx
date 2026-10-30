@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { ApiError, enrollParticipant } from '../../api/client'
+import { enrollParticipant } from '../../api/client'
 import { labelFor, useDomainOptions } from '../../domain/context'
 import { formatCpf, isValidCpf, onlyDigits } from '../../lib/cpf'
-import { useNotify } from '../../notifications/context'
+import { useAction } from '../../lib/useAction'
 import type { DietaryRestriction, Participant } from '../../types/api'
 import { CheckboxGroup } from '../../ui/CheckboxGroup'
 import { ConfirmDialog } from '../../ui/ConfirmDialog'
 import { Field } from '../../ui/Field'
+import { TextField } from '../../ui/TextField'
 import { fieldClass } from '../../ui/styles'
 import { useCollaboratorLookup } from './useCollaboratorLookup'
 
@@ -27,13 +28,10 @@ export function EnrollDialog({
   onClose: () => void
 }) {
   const options = useDomainOptions()
-  const notify = useNotify()
+  const { busy, message, fieldErrors, reject, run } = useAction<'name'>()
   const [cpf, setCpf] = useState('')
   const [name, setName] = useState('')
   const [restrictions, setRestrictions] = useState<DietaryRestriction[]>([])
-  const [nameError, setNameError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
   const lookup = useCollaboratorLookup(cpf)
 
   const alreadyEnrolled = lookup.status === 'found' && participants.some((participant) => participant.collaboratorId === lookup.collaborator.id)
@@ -41,24 +39,20 @@ export function EnrollDialog({
   const cpfError = complete && !isValidCpf(cpf) ? 'CPF inválido. Confira os números.' : undefined
   const ready = (lookup.status === 'found' && !alreadyEnrolled) || lookup.status === 'new'
 
-  const enroll = async () => {
+  const enroll = () => {
     if (lookup.status === 'new' && !name.trim()) {
-      setNameError('Informe o nome da pessoa.')
+      reject(null, { name: 'Informe o nome da pessoa.' })
       return
     }
-    setNameError(null)
-    setMessage(null)
-    setBusy(true)
     const digits = onlyDigits(cpf)
-    try {
-      await enrollParticipant(eventId, lookup.status === 'new' ? { cpf: digits, name: name.trim(), restrictions } : { cpf: digits })
-      notify('Participante inscrito.', 'success')
-      onSaved()
-      onClose()
-    } catch (failure) {
-      setMessage(failure instanceof ApiError ? failure.message : 'Não foi possível inscrever o participante.')
-      setBusy(false)
-    }
+    void run(() => enrollParticipant(eventId, lookup.status === 'new' ? { cpf: digits, name: name.trim(), restrictions } : { cpf: digits }), {
+      done: 'Participante inscrito.',
+      failed: 'Não foi possível inscrever o participante.',
+      onDone: () => {
+        onSaved()
+        onClose()
+      },
+    })
   }
 
   return (
@@ -114,9 +108,7 @@ export function EnrollDialog({
       {lookup.status === 'new' && (
         <>
           <p className="font-semibold">CPF novo. Preencha o cadastro da pessoa.</p>
-          <Field label="Nome" error={nameError ?? undefined}>
-            {(control) => <input {...control} type="text" maxLength={120} value={name} onChange={(e) => setName(e.target.value)} className={fieldClass} />}
-          </Field>
+          <TextField label="Nome" error={fieldErrors.name} maxLength={120} value={name} onChange={setName} />
           {options && (
             <CheckboxGroup legend="Restrições alimentares" options={options.dietaryRestrictions} selected={restrictions} onChange={setRestrictions} />
           )}

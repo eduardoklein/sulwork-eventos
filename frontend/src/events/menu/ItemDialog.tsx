@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { ApiError, createItem, updateItem } from '../../api/client'
+import { createItem, updateItem } from '../../api/client'
 import { labelFor, useDomainOptions } from '../../domain/context'
-import { useNotify } from '../../notifications/context'
+import { useAction } from '../../lib/useAction'
 import type { Allergen, Category, FoodCharacteristic, Item } from '../../types/api'
 import { CheckboxGroup } from '../../ui/CheckboxGroup'
 import { ConfirmDialog } from '../../ui/ConfirmDialog'
 import { Field } from '../../ui/Field'
+import { TextField } from '../../ui/TextField'
 import { fieldClass } from '../../ui/styles'
 
 interface Values {
@@ -17,10 +18,8 @@ interface Values {
   characteristics: FoodCharacteristic[]
 }
 
-type Errors = Partial<Record<keyof Values, string>>
-
-function validate(values: Values, creating: boolean): Errors {
-  const errors: Errors = {}
+function validate(values: Values, creating: boolean) {
+  const errors: Partial<Record<keyof Values, string>> = {}
   if (!values.name.trim()) errors.name = 'Informe o nome do item.'
   if (creating && !values.categoryId) errors.categoryId = 'Escolha a categoria.'
   const quantity = Number(values.requiredQuantity)
@@ -51,7 +50,7 @@ export function ItemDialog({
   onClose: () => void
 }) {
   const options = useDomainOptions()
-  const notify = useNotify()
+  const { busy, message, fieldErrors: errors, reject, run } = useAction<keyof Values>()
   const [values, setValues] = useState<Values>({
     name: item?.name ?? '',
     categoryId: String(item?.categoryId ?? categoryId ?? ''),
@@ -60,19 +59,15 @@ export function ItemDialog({
     allergens: item?.allergens ?? [],
     characteristics: item?.characteristics ?? [],
   })
-  const [errors, setErrors] = useState<Errors>({})
-  const [message, setMessage] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
   const creating = !item
 
   const unit = item?.unit ?? categories.find((category) => String(category.id) === values.categoryId)?.unit
   const set = <Key extends keyof Values>(key: Key, value: Values[Key]) => setValues((current) => ({ ...current, [key]: value }))
 
-  const save = async () => {
+  const save = () => {
     const missing = validate(values, creating)
-    setErrors(missing)
     if (Object.keys(missing).length > 0) {
-      setMessage('Corrija os campos destacados.')
+      reject('Corrija os campos destacados.', missing)
       return
     }
     const body = {
@@ -82,22 +77,14 @@ export function ItemDialog({
       allergens: values.allergens,
       characteristics: values.characteristics,
     }
-    setMessage(null)
-    setBusy(true)
-    try {
-      await (item ? updateItem(eventId, item.id, body) : createItem(eventId, { ...body, categoryId: Number(values.categoryId) }))
-      notify(item ? 'Item salvo.' : 'Item criado.', 'success')
-      onSaved()
-      onClose()
-    } catch (failure) {
-      if (failure instanceof ApiError) {
-        setErrors(failure.fieldErrors as Errors)
-        setMessage(failure.message)
-      } else {
-        setMessage('Não foi possível salvar o item.')
-      }
-      setBusy(false)
-    }
+    void run(() => (item ? updateItem(eventId, item.id, body) : createItem(eventId, { ...body, categoryId: Number(values.categoryId) })), {
+      done: item ? 'Item salvo.' : 'Item criado.',
+      failed: 'Não foi possível salvar o item.',
+      onDone: () => {
+        onSaved()
+        onClose()
+      },
+    })
   }
 
   return (
@@ -110,9 +97,7 @@ export function ItemDialog({
       onConfirm={save}
       onCancel={onClose}
     >
-      <Field label="Nome" error={errors.name}>
-        {(control) => <input {...control} type="text" maxLength={120} value={values.name} onChange={(e) => set('name', e.target.value)} className={fieldClass} />}
-      </Field>
+      <TextField label="Nome" error={errors.name} maxLength={120} value={values.name} onChange={(value) => set('name', value)} />
       {creating ? (
         <Field label="Categoria" error={errors.categoryId}>
           {(control) => (

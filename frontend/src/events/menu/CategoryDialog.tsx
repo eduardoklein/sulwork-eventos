@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { ApiError, createCategory, updateCategory } from '../../api/client'
+import { createCategory, updateCategory } from '../../api/client'
 import { useDomainOptions } from '../../domain/context'
-import { useNotify } from '../../notifications/context'
+import { useAction } from '../../lib/useAction'
 import type { Category, MeasureUnit } from '../../types/api'
 import { ConfirmDialog } from '../../ui/ConfirmDialog'
 import { Field } from '../../ui/Field'
+import { TextField } from '../../ui/TextField'
 import { fieldClass } from '../../ui/styles'
 
 interface Values {
@@ -13,10 +14,8 @@ interface Values {
   goalQuantity: string
 }
 
-type Errors = Partial<Record<keyof Values, string>>
-
-function validate(values: Values): Errors {
-  const errors: Errors = {}
+function validate(values: Values) {
+  const errors: Partial<Record<keyof Values, string>> = {}
   if (!values.name.trim()) errors.name = 'Informe o nome da categoria.'
   if (!values.unit) errors.unit = 'Escolha a unidade.'
   const goal = Number(values.goalQuantity)
@@ -37,43 +36,31 @@ export function CategoryDialog({
   onClose: () => void
 }) {
   const options = useDomainOptions()
-  const notify = useNotify()
+  const { busy, message, fieldErrors: errors, reject, run } = useAction<keyof Values>()
   const [values, setValues] = useState<Values>({
     name: category?.name ?? '',
     unit: category?.unit ?? '',
     goalQuantity: category ? String(category.goalQuantity) : '0',
   })
-  const [errors, setErrors] = useState<Errors>({})
-  const [message, setMessage] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
   const unitLocked = Boolean(category && category.totalItems > 0)
 
   const set = (key: keyof Values, value: string) => setValues((current) => ({ ...current, [key]: value }))
 
-  const save = async () => {
+  const save = () => {
     const missing = validate(values)
-    setErrors(missing)
     if (Object.keys(missing).length > 0) {
-      setMessage('Corrija os campos destacados.')
+      reject('Corrija os campos destacados.', missing)
       return
     }
     const body = { name: values.name.trim(), unit: values.unit as MeasureUnit, goalQuantity: Number(values.goalQuantity) }
-    setMessage(null)
-    setBusy(true)
-    try {
-      await (category ? updateCategory(eventId, category.id, body) : createCategory(eventId, body))
-      notify(category ? 'Categoria salva.' : 'Categoria criada.', 'success')
-      onSaved()
-      onClose()
-    } catch (failure) {
-      if (failure instanceof ApiError) {
-        setErrors(failure.fieldErrors as Errors)
-        setMessage(failure.message)
-      } else {
-        setMessage('Não foi possível salvar a categoria.')
-      }
-      setBusy(false)
-    }
+    void run(() => (category ? updateCategory(eventId, category.id, body) : createCategory(eventId, body)), {
+      done: category ? 'Categoria salva.' : 'Categoria criada.',
+      failed: 'Não foi possível salvar a categoria.',
+      onDone: () => {
+        onSaved()
+        onClose()
+      },
+    })
   }
 
   return (
@@ -86,9 +73,7 @@ export function CategoryDialog({
       onConfirm={save}
       onCancel={onClose}
     >
-      <Field label="Nome" error={errors.name}>
-        {(control) => <input {...control} type="text" maxLength={80} value={values.name} onChange={(e) => set('name', e.target.value)} className={fieldClass} />}
-      </Field>
+      <TextField label="Nome" error={errors.name} maxLength={80} value={values.name} onChange={(value) => set('name', value)} />
       <Field
         label="Unidade"
         hint={unitLocked ? 'A unidade não muda enquanto a categoria tem itens.' : 'Os itens da categoria usam esta unidade.'}

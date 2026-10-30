@@ -1,5 +1,6 @@
 import { labelFor, useDomainOptions } from '../../domain/context'
 import type { ParticipantDiet, Participant } from '../../types/api'
+import { RowActions } from '../../ui/RowActions'
 import { buttonClass } from '../../ui/styles'
 
 export function ParticipantRow({
@@ -31,18 +32,19 @@ export function ParticipantRow({
           {diet.safeItems} de {diet.totalItems} {diet.totalItems === 1 ? 'item é seguro' : 'itens são seguros'}
         </p>
       )}
-      <div className="mt-2 flex flex-wrap gap-2">
-        <button type="button" aria-label={`Ver cardápio de ${name}`} onClick={onViewMenu} className={buttonClass('secondary')}>
-          Ver cardápio
-        </button>
-        <button type="button" aria-label={`Editar cadastro de ${name}`} onClick={onEdit} className={buttonClass('secondary')}>
-          Editar cadastro
-        </button>
-        {editable && (
-          <button type="button" aria-label={`Remover ${name}`} onClick={onRemove} className={buttonClass('danger')}>
-            Remover
+      <div className="mt-2">
+        <RowActions
+          editLabel="Editar cadastro"
+          editName={`Editar cadastro de ${name}`}
+          deleteLabel="Remover"
+          deleteName={`Remover ${name}`}
+          onEdit={onEdit}
+          onDelete={editable ? onRemove : undefined}
+        >
+          <button type="button" aria-label={`Ver cardápio de ${name}`} onClick={onViewMenu} className={buttonClass('secondary')}>
+            Ver cardápio
           </button>
-        )}
+        </RowActions>
       </div>
     </li>
   )

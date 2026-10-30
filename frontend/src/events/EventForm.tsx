@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { labelFor, useDomainOptions } from '../domain/context'
 import type { EventStatus } from '../types/api'
 import { Field } from '../ui/Field'
+import { TextField } from '../ui/TextField'
 import { buttonClass, fieldClass } from '../ui/styles'
 import { type EditRule, type EventFormValues, type FormErrors } from './eventFormValues'
 import { zoneChoices, zoneLabel } from './zones'
@@ -41,11 +42,7 @@ export function EventForm({
 
   return (
     <form onSubmit={submit} noValidate className="max-w-2xl space-y-5">
-      <Field label="Nome" error={errors.name}>
-        {(control) => (
-          <input {...control} type="text" maxLength={120} value={values.name} onChange={(e) => set('name', e.target.value)} className={fieldClass} />
-        )}
-      </Field>
+      <TextField label="Nome" error={errors.name} maxLength={120} value={values.name} onChange={(value) => set('name', value)} />
 
       <Field label="Descrição (opcional)" error={errors.description}>
         {(control) => (
