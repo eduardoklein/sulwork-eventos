@@ -19,7 +19,11 @@ import br.com.sulwork.events.dto.CreateItemRequest;
 import br.com.sulwork.events.dto.ItemResponse;
 import br.com.sulwork.events.service.ItemService;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "Itens do cardápio", description = "Itens de cada categoria, com alérgenos e características.")
 @RestController
 @RequestMapping("/api/events/{eventId}/items")
 public class ItemController {
@@ -30,28 +34,36 @@ public class ItemController {
 		this.service = service;
 	}
 
+	@Operation(summary = "Cria um item do cardápio")
 	@PostMapping
 	ResponseEntity<ItemResponse> create(@PathVariable Long eventId, @Valid @RequestBody CreateItemRequest request) {
 		ItemResponse created = service.create(eventId, request);
 		return ResponseEntity.created(URI.create("/api/events/" + eventId + "/items/" + created.id())).body(created);
 	}
 
+	@Operation(summary = "Lista os itens do cardápio",
+			description = "Cada item traz a quantidade contribuída, a pendente e o percentual coberto.")
 	@GetMapping
-	List<ItemResponse> list(@PathVariable Long eventId, @RequestParam(required = false) Long categoryId) {
+	List<ItemResponse> list(@PathVariable Long eventId, @Parameter(description = "Traz só os itens desta categoria") @RequestParam(required = false) Long categoryId) {
 		return service.list(eventId, categoryId);
 	}
 
+	@Operation(summary = "Busca um item pelo id")
 	@GetMapping("/{id}")
 	ItemResponse find(@PathVariable Long eventId, @PathVariable Long id) {
 		return service.find(eventId, id);
 	}
 
+	@Operation(summary = "Edita um item",
+			description = "O item não muda de categoria, e a quantidade não fica abaixo do que já foi contribuído.")
 	@PutMapping("/{id}")
 	ItemResponse update(@PathVariable Long eventId, @PathVariable Long id,
 			@Valid @RequestBody UpdateItemRequest request) {
 		return service.update(eventId, id, request);
 	}
 
+	@Operation(summary = "Exclui um item",
+			description = "Só itens sem contribuições podem ser excluídos.")
 	@DeleteMapping("/{id}")
 	ResponseEntity<Void> delete(@PathVariable Long eventId, @PathVariable Long id) {
 		service.delete(eventId, id);

@@ -1,6 +1,6 @@
 package br.com.sulwork.events.domain;
 
-public enum EventReadiness {
+public enum EventReadiness implements Described {
 
 	NO_ITEMS("Sem itens"),
 	CRITICAL("Crítico"),
@@ -14,6 +14,7 @@ public enum EventReadiness {
 		this.description = description;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

@@ -20,6 +20,8 @@ server:
 
 app:
   default-time-zone: ${APP_TIMEZONE:America/Sao_Paulo}
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
 springdoc:
   api-docs:

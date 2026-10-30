@@ -1,6 +1,6 @@
 package br.com.sulwork.events.domain;
 
-public enum EventType {
+public enum EventType implements Described {
 
 	BREAKFAST("Café da Manhã"),
 	LUNCH("Almoço"),
@@ -14,6 +14,7 @@ public enum EventType {
 		this.description = description;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

@@ -1,6 +1,6 @@
 package br.com.sulwork.events.domain;
 
-public enum Allergen {
+public enum Allergen implements Described {
 
 	GLUTEN("Glúten"),
 	LACTOSE("Lactose"),
@@ -17,6 +17,7 @@ public enum Allergen {
 		this.description = description;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

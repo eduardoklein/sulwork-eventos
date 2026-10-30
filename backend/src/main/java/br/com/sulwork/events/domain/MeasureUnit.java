@@ -1,6 +1,6 @@
 package br.com.sulwork.events.domain;
 
-public enum MeasureUnit {
+public enum MeasureUnit implements Described {
 
 	UNIT("Unidade"),
 	PORTION("Porção"),
@@ -13,6 +13,7 @@ public enum MeasureUnit {
 		this.description = description;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

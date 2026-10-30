@@ -16,7 +16,7 @@ import static br.com.sulwork.events.domain.FoodCharacteristic.ADDED_SUGAR;
 import static br.com.sulwork.events.domain.FoodCharacteristic.HIGH_SODIUM;
 import static br.com.sulwork.events.domain.FoodCharacteristic.ANIMAL_MEAT;
 
-public enum DietaryRestriction {
+public enum DietaryRestriction implements Described {
 
 	LACTOSE_INTOLERANCE("Intolerância à lactose", allergens(LACTOSE), noCharacteristics()),
 	CELIAC_GLUTEN_FREE("Celíaco (sem glúten)", allergens(GLUTEN), noCharacteristics()),
@@ -41,6 +41,7 @@ public enum DietaryRestriction {
 		this.conflictingCharacteristics = conflictingCharacteristics;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

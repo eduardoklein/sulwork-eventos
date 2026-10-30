@@ -14,7 +14,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | :-- | :--- | :--- |
 | 1 | Quais transições de status existem? | Fluxo em linha: `RASCUNHO → ABERTO → ENCERRADO → REALIZADO`. O `CANCELADO` é possível a partir de `RASCUNHO`, `ABERTO` e `ENCERRADO`. `REALIZADO` e `CANCELADO` são finais. Não há reabertura. |
 | 2 | Como o prazo e o status se combinam? | A API confere o relógio em cada operação. Um job agendado muda `ABERTO` para `ENCERRADO` quando o prazo passa. O prazo não pode ser depois da data do evento. |
-| 3 | Como uma pessoa participa de vários eventos sem cadastro duplicado? | Cadastro único da pessoa, com CPF único, guarda nome e restrições alimentares. Uma inscrição liga a pessoa ao evento. Um índice único impede a mesma pessoa duas vezes no mesmo evento. |
+| 3 | Como uma pessoa participa de vários eventos sem cadastro duplicado? | Cadastro único da pessoa, com CPF único, guarda nome e restrições alimentares. Uma inscrição liga a pessoa ao evento. Um índice único impede a mesma pessoa duàs vezes no mesmo evento. |
 | 4 | Como calcular a cobertura? | A conta roda dentro de cada categoria, onde a unidade é uma só, e o geral é a média das categorias. Veja a seção "Cálculo da cobertura". |
 | 5 | Como relacionar restrições alimentares e alérgenos? | Matriz fixa de conflitos, em listas fechadas. Veja a seção "Alérgenos, características e restrições". A visão "ver o cardápio como" um participante marca os itens em conflito. O sistema avisa e não bloqueia. |
 | 6 | Qual será a funcionalidade livre? | Sugestões do que levar (itens com maior falta e seguros para a restrição da pessoa) e resumo em texto para compartilhar. |
@@ -44,6 +44,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 30 | Como o sistema mostra quem pode ficar sem comer? | `GET /api/events/{id}/dietary-analysis` cruza as restrições de cada participante com os alérgenos e as características de cada item, pela matriz da seção "Alérgenos, características e restrições". Mostra, por pessoa, quantos itens são seguros e quais não são, com o motivo. Mostra, por restrição, quantas pessoas a têm e quantos itens são compatíveis. Gera alertas: `CRITICAL` quando uma pessoa com restrição não tem nenhum item seguro, `WARNING` quando menos de 35% do cardápio é seguro para ela, e `INFO` ("Cardápio inclusivo") quando não há outro alerta, há pessoas com restrição e o cardápio tem itens. Com o cardápio vazio, não há alertas. O sistema só avisa e não bloqueia. Um item sem nenhuma marca conta como seguro, então o aviso vale tanto quanto o cadastro dos itens. |
 | 31 | Qual é a funcionalidade livre, e como ela decide o que sugerir? | Sugestões do que levar: `GET /api/events/{id}/suggestions?participantId=X`. Veja a seção "Funcionalidade livre: sugestões do que levar". A prioridade vai de 0 a 100, em relação ao máximo que aquela pessoa poderia pontuar. Itens que a pessoa já contribui, itens completos e eventos que não aceitam contribuições ficam fora da lista. |
 | 32 | O que entra no resumo para compartilhar? | `GET /api/events/{id}/summary` devolve um texto pronto para colar em um grupo (WhatsApp, Slack ou Teams): o nome, a data, o prazo, a situação, a cobertura, o que ainda falta (obrigatórios primeiro) e quem já vai levar o quê. O texto não leva CPF nem restrições alimentares: ele vai para um grupo, e restrição alimentar é dado de saúde. |
+| 33 | Como o frontend recebe os rótulos, e como a API é documentada e liberada para o navegador? | `GET /api/domain/options` devolve todas as listas fechadas (tipos, status, unidades, alérgenos, características, restrições e níveis de prontidão) com o código e o texto de cada opção. Os rótulos ficam só no backend. O Swagger descreve cada rota. O CORS libera só a origem configurada em `APP_CORS_ALLOWED_ORIGINS`, nunca `*`. Veja a seção "Documentação da API e CORS". |
 
 ## Tecnologias escolhidas
 
@@ -201,3 +202,11 @@ Opcionais:
 - **Ordem do que falta.** Obrigatórios primeiro e, dentro de cada grupo, os itens menos cobertos primeiro.
 - **O que fica de fora.** CPF e restrições alimentares nunca entram no texto. O texto vai para um grupo, e restrição alimentar é dado de saúde. O aviso de quem pode ficar sem comer fica na análise alimentar, que só o organizador vê.
 - **Casos vazios.** Sem itens, o texto diz "Ainda não há itens no cardápio." Sem nada faltando, diz "Nada: o cardápio está completo." Sem contribuições, diz "Ninguém contribuiu ainda."
+
+## Documentação da API e CORS
+
+**Swagger.** A documentação interativa fica em `/swagger-ui.html`, e o contrato em `/v3/api-docs`. Cada grupo de rotas tem um título e uma descrição, e cada rota tem um resumo, às vezes com uma descrição das regras. A descrição geral explica o formato dos erros, que não há login e que as datas são horários de parede no fuso do evento. Um teste percorre o contrato e falha se alguma rota ficar sem resumo ou sem grupo.
+
+**Opções do sistema.** `GET /api/domain/options` devolve, para cada lista fechada, o código que a API usa e o texto que o usuário lê, por exemplo `{"code": "CELIAC_GLUTEN_FREE", "description": "Celíaco (sem glúten)"}`. O frontend não repete a lista e nunca fica desatualizado. Os cinco status do evento mantêm os nomes que o enunciado manda.
+
+**CORS.** O navegador bloqueia chamadas de outra origem. Em desenvolvimento, o frontend roda em outra porta (`http://localhost:5173`). A API libera `/api/**` só para as origens da variável `APP_CORS_ALLOWED_ORIGINS` (uma lista separada por vírgulas, com `http://localhost:5173` como padrão). Ela nunca responde `*`, não aceita credenciais e só aceita os métodos e o cabeçalho que a API usa. No Docker, o nginx repassa `/api` na mesma origem do frontend, então o CORS nem entra em ação.

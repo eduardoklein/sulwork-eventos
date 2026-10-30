@@ -4,7 +4,7 @@ package br.com.sulwork.events.domain;
  * Item properties that are not allergens but matter for some restrictions
  * (vegetarians, diabetics, hypertensives).
  */
-public enum FoodCharacteristic {
+public enum FoodCharacteristic implements Described {
 
 	ANIMAL_MEAT("Carne de origem animal"),
 	ADDED_SUGAR("Açúcar adicionado"),
@@ -16,6 +16,7 @@ public enum FoodCharacteristic {
 		this.description = description;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

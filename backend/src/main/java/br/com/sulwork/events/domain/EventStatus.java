@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-public enum EventStatus {
+public enum EventStatus implements Described {
 
 	RASCUNHO("Rascunho", true, false, false) {
 		@Override
@@ -72,6 +72,7 @@ public enum EventStatus {
 		return allowedTransitions().isEmpty();
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

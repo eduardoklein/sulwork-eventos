@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.sulwork.events.dto.SummaryResponse;
 import br.com.sulwork.events.service.SummaryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "Resumo", description = "O texto do evento para compartilhar em um grupo.")
 @RestController
 @RequestMapping("/api/events/{eventId}/summary")
 public class SummaryController {
@@ -18,6 +21,8 @@ public class SummaryController {
 		this.service = service;
 	}
 
+	@Operation(summary = "Gera o resumo do evento para compartilhar",
+			description = "Texto pronto para WhatsApp, Slack ou Teams. Não leva CPF nem restrições alimentares.")
 	@GetMapping
 	SummaryResponse summarize(@PathVariable Long eventId) {
 		return service.summarize(eventId);
