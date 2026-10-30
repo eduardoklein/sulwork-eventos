@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ApiError, getEvent, listContributions, listItems, listParticipants } from '../api/client'
-import type { Contribution, FoodEvent, Item, Participant } from '../types/api'
+import { ApiError, getEvent, listCategories, listContributions, listItems, listParticipants } from '../api/client'
+import type { Category, Contribution, FoodEvent, Item, Participant } from '../types/api'
 
 /** What several tabs share: the event, and the lists that the counters of the tabs count. */
 export interface EventData {
   event: FoodEvent
+  categories: Category[]
   items: Item[]
   participants: Participant[]
   contributions: Contribution[]
@@ -16,13 +17,14 @@ export type EventDataState =
   | { status: 'ready'; data: EventData }
 
 async function fetchEventData(id: number): Promise<EventData> {
-  const [event, items, participants, contributions] = await Promise.all([
+  const [event, categories, items, participants, contributions] = await Promise.all([
     getEvent(id),
+    listCategories(id),
     listItems(id),
     listParticipants(id),
     listContributions(id),
   ])
-  return { event, items, participants, contributions }
+  return { event, categories, items, participants, contributions }
 }
 
 function failed(error: unknown): EventDataState {

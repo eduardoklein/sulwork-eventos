@@ -25,6 +25,7 @@ function stubEvent(event: FoodEvent, extra: Record<string, unknown> = {}) {
   return stubApi({
     '/api/domain/options': domainOptions,
     '/api/events/1': event,
+    '/api/events/1/categories': [],
     '/api/events/1/items': [{ id: 1 }, { id: 2 }, { id: 3 }],
     '/api/events/1/participants': [{ id: 1 }, { id: 2 }],
     '/api/events/1/contributions': [{ id: 1 }],
@@ -119,6 +120,7 @@ describe('EventPage: loading failures', () => {
     stubApi({
       '/api/domain/options': domainOptions,
       '/api/events/1': failure(404, 'Evento não encontrado.'),
+      '/api/events/1/categories': [],
       '/api/events/1/items': [],
       '/api/events/1/participants': [],
       '/api/events/1/contributions': [],

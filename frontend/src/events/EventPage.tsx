@@ -3,6 +3,7 @@ import { EmptyState } from '../ui/EmptyState'
 import { buttonClass } from '../ui/styles'
 import { EventHeader } from './EventHeader'
 import { EventTabs } from './EventTabs'
+import { MenuTab } from './menu/MenuTab'
 import { TAB_TITLES } from './tabTitles'
 import { useEventData } from './useEventData'
 
@@ -33,7 +34,7 @@ export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
       </div>
     )
   }
-  const { event, items, participants, contributions } = state.data
+  const { event, categories, items, participants, contributions } = state.data
   return (
     <>
       <EventHeader event={event} onChanged={reload} />
@@ -42,10 +43,14 @@ export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
         current={tab}
         counts={{ menu: items.length, participants: participants.length, contributions: contributions.length }}
       />
-      {/* The content of each tab comes with steps 31 to 35. */}
-      <section aria-label={TAB_TITLES[tab]} className="py-6 text-ink-soft">
-        <p>Esta aba chega nos próximos passos.</p>
-      </section>
+      {tab === 'menu' ? (
+        <MenuTab event={event} categories={categories} items={items} onChanged={reload} />
+      ) : (
+        // The content of the other tabs comes with steps 32 to 35.
+        <section aria-label={TAB_TITLES[tab]} className="py-6 text-ink-soft">
+          <p>Esta aba chega nos próximos passos.</p>
+        </section>
+      )}
     </>
   )
 }

@@ -100,6 +100,7 @@ describe('App', () => {
     stubApi({
       '/api/domain/options': domainOptions,
       '/api/events/5': makeEvent({ id: 5, name: 'Jantar de sexta' }),
+      '/api/events/5/categories': [],
       '/api/events/5/items': [],
       '/api/events/5/participants': [],
       '/api/events/5/contributions': [],

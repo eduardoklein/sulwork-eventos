@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import type { DomainOptions, FoodEvent } from '../types/api'
+import type { Category, DomainOptions, FoodEvent, Item } from '../types/api'
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -40,9 +40,22 @@ export const domainOptions: DomainOptions = {
     { code: 'REALIZADO', description: 'Realizado' },
     { code: 'CANCELADO', description: 'Cancelado' },
   ],
-  measureUnits: [],
-  allergens: [],
-  foodCharacteristics: [],
+  measureUnits: [
+    { code: 'UNIT', description: 'Unidade' },
+    { code: 'PORTION', description: 'Porção' },
+    { code: 'GRAM', description: 'Grama' },
+    { code: 'MILLILITER', description: 'Mililitro' },
+  ],
+  allergens: [
+    { code: 'GLUTEN', description: 'Glúten' },
+    { code: 'LACTOSE', description: 'Lactose' },
+    { code: 'EGG', description: 'Ovo' },
+  ],
+  foodCharacteristics: [
+    { code: 'ANIMAL_MEAT', description: 'Carne de origem animal' },
+    { code: 'ADDED_SUGAR', description: 'Açúcar adicionado' },
+    { code: 'HIGH_SODIUM', description: 'Rico em sal' },
+  ],
   dietaryRestrictions: [],
   eventReadiness: [
     { code: 'NO_ITEMS', description: 'Sem itens' },
@@ -66,6 +79,26 @@ export function makeEvent(overrides: Partial<FoodEvent> & Pick<FoodEvent, 'id' |
     allowedTransitions: ['ENCERRADO', 'CANCELADO'],
     createdAt: '2026-10-29T10:00:00',
     updatedAt: '2026-10-29T10:00:00',
+    ...overrides,
+  }
+}
+
+export function makeCategory(overrides: Partial<Category> & Pick<Category, 'id' | 'name'>): Category {
+  return { unit: 'PORTION', goalQuantity: 30, totalItems: 0, plannedQuantity: 0, contributedQuantity: 0, ...overrides }
+}
+
+export function makeItem(overrides: Partial<Item> & Pick<Item, 'id' | 'name'>): Item {
+  return {
+    categoryId: 1,
+    categoryName: 'Pratos',
+    unit: 'PORTION',
+    requiredQuantity: 10,
+    mandatory: false,
+    contributedQuantity: 0,
+    pendingQuantity: 10,
+    coveredPercentage: 0,
+    allergens: [],
+    characteristics: [],
     ...overrides,
   }
 }

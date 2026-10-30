@@ -30,7 +30,7 @@ export function ConfirmDialog({
   }
   return (
     <Modal open={open} title={title} onClose={busy ? () => {} : onCancel}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} noValidate className="space-y-4">
         {children}
         {error && (
           <p role="alert" className="rounded-md border border-danger bg-danger-soft px-3 py-2 text-danger-ink">
