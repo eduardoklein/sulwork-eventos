@@ -38,17 +38,23 @@ public interface ItemEventoRepository extends JpaRepository<ItemEvento, Long> {
 	 * multiplicar a soma das quantidades necessárias. Categorias sem itens aparecem com zeros.
 	 */
 	@Query(nativeQuery = true, value = """
+			-- Uma linha por categoria do evento, com tudo somado pelo banco.
 			SELECT cat.id AS "categoriaId",
 			       cat.nome AS "nome",
 			       cat.unidade AS "unidade",
 			       cat.meta_quantidade AS "metaQuantidade",
 			       COUNT(i.id) AS "totalItens",
+			       -- FILTER soma só as linhas que passam na condição: separa obrigatórios de opcionais
+			       -- em uma única passada. COALESCE troca a soma vazia (NULL) por zero.
 			       COALESCE(SUM(i.quantidade_necessaria) FILTER (WHERE i.obrigatorio), 0)::bigint AS "necessarioObrigatorios",
 			       COALESCE(SUM(i.quantidade_necessaria) FILTER (WHERE NOT i.obrigatorio), 0)::bigint AS "necessarioOpcionais",
 			       COALESCE(SUM(c.total) FILTER (WHERE i.obrigatorio), 0)::bigint AS "contribuidoObrigatorios",
 			       COALESCE(SUM(c.total) FILTER (WHERE NOT i.obrigatorio), 0)::bigint AS "contribuidoOpcionais"
 			FROM categorias_evento cat
+			-- LEFT JOIN: uma categoria sem itens continua na lista, com zeros.
 			LEFT JOIN itens_evento i ON i.categoria_id = cat.id
+			-- As contribuições entram já somadas por item. Se entrassem linha a linha, um item com
+			-- 4 contribuições viraria 4 linhas, e a quantidade necessária dele seria somada 4 vezes.
 			LEFT JOIN (SELECT item_id, SUM(quantidade) AS total FROM contribuicoes GROUP BY item_id) c
 			       ON c.item_id = i.id
 			WHERE cat.evento_id = :eventoId

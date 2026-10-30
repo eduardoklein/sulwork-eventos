@@ -93,3 +93,13 @@ A matriz mora nos enums, em um só lugar. Mudar a matriz muda o sistema inteiro.
 - **Sem reabertura.** Um evento encerrado não volta a `ABERTO`. Reabrir exigiria um novo prazo e deixaria a regra do prazo mais complexa.
 
 O enum `StatusEvento` guarda essas regras. Os services consultam o status e não repetem `if` próprios.
+
+## Consulta SQL nativa da cobertura por categoria
+
+O enunciado exige pelo menos uma consulta SQL nativa. Ela está em `ItemEventoRepository.coberturaPorCategoria`. Para cada categoria do evento, o banco devolve uma linha com a meta, o total de itens, e a quantidade necessária e a contribuída, separando itens obrigatórios e opcionais. A cobertura (passo seguinte) é calculada sobre essas linhas.
+
+Somar e agrupar várias tabelas é trabalho do banco: trazer todas as linhas para o Java e somar lá seria mais lento e mais código. Três pontos da consulta merecem atenção:
+
+- **Subconsulta das contribuições.** As contribuições entram já somadas por item. Se entrassem linha a linha, um item com 4 contribuições viraria 4 linhas, e a quantidade necessária dele seria somada 4 vezes. Um teste com 100 necessários e 4 contribuições de 10 prova que o resultado é 100 necessários e 40 contribuídos.
+- **`LEFT JOIN`.** Uma categoria sem itens continua na lista, com zeros. Com um `JOIN` comum, ela sumiria.
+- **`SUM(...) FILTER (WHERE ...)`.** Recurso do PostgreSQL que soma só as linhas que passam na condição. Ele separa obrigatórios de opcionais em uma única passada.
