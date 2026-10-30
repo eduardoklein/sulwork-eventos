@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { DomainOptionsProvider } from './domain/DomainOptionsProvider'
+import { EventFormPage } from './events/EventFormPage'
 import { EventsPage } from './events/EventsPage'
 import { NotificationsProvider } from './notifications/NotificationsProvider'
 import { routeHash, type Route } from './router/route'
@@ -64,6 +65,8 @@ export default function App() {
         <main ref={mainRef} tabIndex={-1} className="mx-auto max-w-5xl px-4 py-8 outline-none">
           <h1 className="font-display text-3xl font-bold tracking-tight">{title}</h1>
           {route.name === 'events' && <EventsPage />}
+          {route.name === 'new' && <EventFormPage />}
+          {route.name === 'edit' && <EventFormPage key={route.id} eventId={route.id} />}
         </main>
       </DomainOptionsProvider>
     </NotificationsProvider>

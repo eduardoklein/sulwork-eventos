@@ -10,12 +10,12 @@ function json(status: number, body: unknown): Response {
  * a function, to build a failure or an answer that changes. An address that is not in the table answers 404.
  */
 export function stubApi(routes: Record<string, unknown>) {
-  const fetchMock = vi.fn(async (input: string) => {
+  const fetchMock = vi.fn(async (input: string, init?: RequestInit) => {
     if (!(input in routes)) {
       return json(404, { status: 404, detail: 'Recurso não encontrado.' })
     }
     const answer = routes[input]
-    return typeof answer === 'function' ? (answer as () => Response)() : json(200, answer)
+    return typeof answer === 'function' ? (answer as (init?: RequestInit) => Response)(init) : json(200, answer)
   })
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock
