@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.sulwork</groupId>
-	<artifactId>eventos-api</artifactId>
+	<artifactId>events-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>eventos-api</name>
-	<description>API de eventos de alimentação da Sulwork</description>
+	<name>events-api</name>
+	<description>Sulwork food events API</description>
 	<scm>
 		<connection/>
 		<developerConnection/>

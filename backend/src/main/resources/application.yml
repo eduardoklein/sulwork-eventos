@@ -1,6 +1,6 @@
 spring:
   application:
-    name: eventos-api
+    name: events-api
   web:
     locale: pt-BR
     locale-resolver: fixed
@@ -19,7 +19,7 @@ server:
   port: ${PORT:8080}
 
 app:
-  fuso-padrao: ${APP_TIMEZONE:America/Sao_Paulo}
+  default-time-zone: ${APP_TIMEZONE:America/Sao_Paulo}
 
 springdoc:
   api-docs:
