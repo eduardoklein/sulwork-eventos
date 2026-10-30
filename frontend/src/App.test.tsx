@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
-import { domainOptions, stubApi } from './test/fakeApi'
+import { domainOptions, makeEvent, stubApi } from './test/fakeApi'
 
 // jsdom fires `hashchange` in a later task, like a browser, so the tests wait for the screen to change.
 async function goTo(hash: string) {
@@ -39,10 +39,6 @@ describe('App', () => {
     ['#/events', 'Eventos'],
     ['#/events/new', 'Novo evento'],
     ['#/events/5/edit', 'Editar evento'],
-    ['#/events/5', 'Evento 5: resumo'],
-    ['#/events/5/menu', 'Evento 5: cardápio'],
-    ['#/events/5/participants', 'Evento 5: participantes'],
-    ['#/events/5/contributions', 'Evento 5: contribuições'],
   ])('shows the screen of %s', (hash, heading) => {
     window.location.hash = hash
 
@@ -54,9 +50,9 @@ describe('App', () => {
   it('follows the address when it changes', async () => {
     render(<App />)
 
-    await goTo('#/events/9/menu')
+    await goTo('#/events/new')
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Evento 9: cardápio' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Novo evento' })).toBeInTheDocument()
   })
 
   it('takes an unknown address to the events list and replaces the address', async () => {
@@ -85,6 +81,35 @@ describe('App', () => {
     expect(document.title).toBe('Eventos · Sulwork Eventos')
     await goTo('#/events/new')
     expect(document.title).toBe('Novo evento · Sulwork Eventos')
+  })
+
+  it.each([
+    ['#/events/5', 'Evento 5: resumo · Sulwork Eventos'],
+    ['#/events/5/menu', 'Evento 5: cardápio · Sulwork Eventos'],
+    ['#/events/5/participants', 'Evento 5: participantes · Sulwork Eventos'],
+    ['#/events/5/contributions', 'Evento 5: contribuições · Sulwork Eventos'],
+  ])('names the tab of an event in the page title of %s', (hash, title) => {
+    window.location.hash = hash
+
+    render(<App />)
+
+    expect(document.title).toBe(title)
+  })
+
+  it('leaves the heading of an event screen to the event, which has its name', async () => {
+    stubApi({
+      '/api/domain/options': domainOptions,
+      '/api/events/5': makeEvent({ id: 5, name: 'Jantar de sexta' }),
+      '/api/events/5/items': [],
+      '/api/events/5/participants': [],
+      '/api/events/5/contributions': [],
+    })
+    window.location.hash = '#/events/5/menu'
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Jantar de sexta' })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   })
 
   it('moves the focus to the new screen when the address changes, but not on the first load', async () => {

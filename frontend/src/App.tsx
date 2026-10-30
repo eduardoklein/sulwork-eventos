@@ -1,20 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { DomainOptionsProvider } from './domain/DomainOptionsProvider'
 import { EventFormPage } from './events/EventFormPage'
+import { EventPage } from './events/EventPage'
 import { EventsPage } from './events/EventsPage'
+import { TAB_TITLES } from './events/tabTitles'
 import { NotificationsProvider } from './notifications/NotificationsProvider'
 import { routeHash, type Route } from './router/route'
 import { useRoute } from './router/useRoute'
 import { Header } from './shell/Header'
 
 const APP_NAME = 'Sulwork Eventos'
-
-const TAB_TITLES = {
-  summary: 'Resumo',
-  menu: 'Cardápio',
-  participants: 'Participantes',
-  contributions: 'Contribuições',
-} as const
 
 /** The name of the screen, for the heading and for the page title the screen reader announces. */
 function screenTitle(route: Route): string {
@@ -63,9 +58,11 @@ export default function App() {
         </button>
         <Header />
         <main ref={mainRef} tabIndex={-1} className="mx-auto max-w-5xl px-4 py-8 outline-none">
-          <h1 className="font-display text-3xl font-bold tracking-tight">{title}</h1>
+          {/* The screen of an event has the name of the event as its heading. */}
+          {route.name !== 'event' && <h1 className="font-display text-3xl font-bold tracking-tight">{title}</h1>}
           {route.name === 'events' && <EventsPage />}
           {route.name === 'new' && <EventFormPage />}
+          {route.name === 'event' && <EventPage key={route.id} id={route.id} tab={route.tab} />}
           {route.name === 'edit' && <EventFormPage key={route.id} eventId={route.id} />}
         </main>
       </DomainOptionsProvider>

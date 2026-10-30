@@ -6,6 +6,7 @@ import { Meter } from '../ui/Meter'
 import { Section } from '../ui/Section'
 import { StatusPill } from '../ui/StatusPill'
 import { buttonClass } from '../ui/styles'
+import { deadlineText } from './deadlineText'
 import { groupEvents } from './groups'
 import { useEventList, type CoverageState } from './useEventList'
 
@@ -69,11 +70,6 @@ function EventRow({ event, options, coverage }: { event: FoodEvent; options: Dom
       {coverage && <CoverageCell event={event} options={options} state={coverage} />}
     </li>
   )
-}
-
-function deadlineText(event: FoodEvent): string {
-  const when = formatDateTime(event.changeDeadline)
-  return event.status === 'ABERTO' ? `Contribuições até ${when}` : `Prazo: ${when}`
 }
 
 function CoverageCell({ event, options, state }: { event: FoodEvent; options: DomainOptions | null; state: CoverageState }) {

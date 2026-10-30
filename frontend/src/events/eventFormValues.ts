@@ -48,7 +48,7 @@ export function validate(values: EventFormValues): FormErrors {
   return errors
 }
 
-const withSeconds = (local: string) => (local.length === 16 ? `${local}:00` : local)
+export const withSeconds = (local: string) => (local.length === 16 ? `${local}:00` : local)
 
 function bodyOf(values: EventFormValues): UpdateEventRequest {
   return {
