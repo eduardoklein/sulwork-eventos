@@ -1,0 +1,43 @@
+# O nginx lê este modelo na subida e troca ${BACKEND_URL} e ${BACKEND_HOST_HEADER} pelas variáveis de ambiente.
+#   Docker Compose (padrão): BACKEND_URL=http://backend:8080, e o Host segue o do navegador.
+#   Render (plano gratuito):  BACKEND_URL=https://<backend>.onrender.com, e o Host é o do backend.
+server {
+    listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+
+    # O navegador fala só com este endereço. A API e a documentação vão para o backend.
+    # No Compose, o Host segue com a porta ($http_host, e não $host): o backend compara com o cabeçalho Origin que
+    # o navegador manda nas escritas, e sem a porta ele trata a própria interface como outra origem e responde 403.
+    # Na hospedagem, o backend tem outro endereço público e só responde ao Host dele. Lá a origem da interface entra
+    # na lista do CORS (APP_CORS_ALLOWED_ORIGINS).
+    location ~ ^/(api/|swagger-ui|v3/api-docs) {
+        proxy_pass ${BACKEND_URL};
+        proxy_set_header Host ${BACKEND_HOST_HEADER};
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_ssl_server_name on;
+        # Um backend gratuito que dormiu leva cerca de 1 minuto para acordar. A primeira chamada espera por ele.
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 180s;
+    }
+
+    # Os nomes dos arquivos de /assets/ mudam a cada versão, então o navegador pode guardá-los por muito tempo.
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # Qualquer outro endereço abre o index.html, e a interface decide a tela.
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}

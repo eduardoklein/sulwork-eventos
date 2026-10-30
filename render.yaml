@@ -1,0 +1,48 @@
+# Publicação no Render, no plano gratuito. No painel: New > Blueprint > escolha este repositório.
+# Passo a passo e limites do plano gratuito: seção "Publicação" do README.
+#
+# Os nomes dos serviços formam os endereços (https://<nome>.onrender.com). Se o Render avisar que um nome já está
+# em uso, ele acrescenta um sufixo ao endereço, e então estes três valores precisam acompanhar o endereço novo:
+# BACKEND_URL, BACKEND_HOST_HEADER e APP_CORS_ALLOWED_ORIGINS.
+databases:
+  - name: sulwork-eventos-db
+    plan: free
+    databaseName: sulwork
+    user: sulwork
+
+services:
+  # A API. No plano gratuito, um serviço web não recebe tráfego pela rede privada, então a interface a chama pelo
+  # endereço público.
+  - type: web
+    name: sulwork-eventos-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    healthCheckPath: /v3/api-docs
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sulwork-eventos-db
+          property: connectionString
+      - key: APP_DEMO_DATA
+        value: "true"
+      # O CORS só libera a origem da interface publicada.
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://sulwork-eventos.onrender.com
+      # A instância gratuita tem pouca memória e pouca CPU.
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+
+  # A interface: o nginx serve os arquivos e repassa /api, /swagger-ui e /v3/api-docs à API.
+  - type: web
+    name: sulwork-eventos
+    runtime: docker
+    plan: free
+    rootDir: frontend
+    envVars:
+      - key: BACKEND_URL
+        value: https://sulwork-eventos-api.onrender.com
+      - key: BACKEND_HOST_HEADER
+        value: sulwork-eventos-api.onrender.com
+      - key: PORT
+        value: "80"
