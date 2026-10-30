@@ -1,1 +1,53 @@
 @import "tailwindcss";
+
+/*
+ * "Lista da copa": the sign-up sheet on the office kitchen wall. A cool white sheet, dark green ink, and ballpoint
+ * blue for people and actions. Green, amber and red keep one meaning each: covered, missing, and conflict or danger.
+ */
+@theme {
+  --font-sans: "Atkinson Hyperlegible Next Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #f7f8f5;
+  --color-surface: #ffffff;
+  --color-ink: #1e2a24;
+  --color-ink-soft: #4a5a52;
+  --color-line: #d5dbd4;
+  --color-line-strong: #9aa79f;
+
+  --color-pen: #1f45b5;
+  --color-pen-dark: #17358c;
+  --color-pen-soft: #e6ecfa;
+
+  --color-ok: #2e7d4f;
+  --color-ok-soft: #e3f1e8;
+  --color-ok-ink: #1e5a37;
+  --color-warn: #b7791f;
+  --color-warn-soft: #f8ebd3;
+  --color-warn-ink: #7a4e0e;
+  --color-danger: #b3352b;
+  --color-danger-soft: #f7e0dd;
+  --color-danger-ink: #8a231b;
+}
+
+@layer base {
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-pen);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
