@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { DomainOptionsProvider } from '../domain/DomainOptionsProvider'
 import { NotificationsProvider } from '../notifications/NotificationsProvider'
 import type { EventTab } from '../router/route'
-import { domainOptions, failure, makeAnalysis, makeEvent, makeParticipant, stubApi } from '../test/fakeApi'
+import { domainOptions, failure, makeAnalysis, makeContribution, makeEvent, makeParticipant, stubApi } from '../test/fakeApi'
 import type { FoodEvent } from '../types/api'
 import { EventPage } from './EventPage'
 
@@ -28,7 +28,7 @@ function stubEvent(event: FoodEvent, extra: Record<string, unknown> = {}) {
     '/api/events/1/categories': [],
     '/api/events/1/items': [{ id: 1 }, { id: 2 }, { id: 3 }],
     '/api/events/1/participants': [makeParticipant({ id: 1, name: 'Ana Souza' }), makeParticipant({ id: 2, name: 'Bia Lima' })],
-    '/api/events/1/contributions': [{ id: 1 }],
+    '/api/events/1/contributions': [makeContribution({ id: 1 })],
     '/api/events/1/dietary-analysis': makeAnalysis(),
     ...extra,
   })

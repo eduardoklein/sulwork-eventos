@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import type { Category, DietaryAnalysis, DomainOptions, FoodEvent, Item, Participant } from '../types/api'
+import type { Category, Contribution, DietaryAnalysis, DomainOptions, FoodEvent, Item, Participant } from '../types/api'
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -113,6 +113,21 @@ export function makeParticipant(overrides: Partial<Participant> & Pick<Participa
     cpf: '***.533.447-**',
     restrictions: [],
     enrolledAt: '2026-10-29T10:00:00',
+    ...overrides,
+  }
+}
+
+export function makeContribution(overrides: Partial<Contribution> & Pick<Contribution, 'id'>): Contribution {
+  return {
+    participantId: 1,
+    participantName: 'Ana Souza',
+    itemId: 7,
+    itemName: 'Lasanha',
+    unit: 'PORTION',
+    quantity: 4,
+    note: null,
+    createdAt: '2026-10-29T10:30:00',
+    updatedAt: '2026-10-29T10:30:00',
     ...overrides,
   }
 }
