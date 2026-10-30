@@ -59,7 +59,7 @@ public class ItemService {
 	public ItemResponse create(Long eventId, CreateItemRequest request) {
 		Event event = eventService.findSyncedEntity(eventId);
 		event.requireEditableMenu();
-		EventCategory category = categories.findByIdAndEventId(request.categoryId(), eventId)
+		EventCategory category = categories.findWithLock(request.categoryId(), eventId)
 				.orElseThrow(() -> new BusinessRuleException("Categoria não encontrada neste evento."));
 		String name = request.name().strip();
 		requireFreeName(category.getId(), name, null);

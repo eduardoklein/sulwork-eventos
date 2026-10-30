@@ -14,6 +14,15 @@ public interface EventCategoryRepository extends JpaRepository<EventCategory, Lo
 
 	Optional<EventCategory> findByIdAndEventId(Long id, Long eventId);
 
+	/**
+	 * Locks the category row until the end of the transaction. Deleting the category, changing its unit and adding
+	 * an item to it pass through here first, so they never see each other half done. It is a native {@code FOR UPDATE}
+	 * on purpose: the JPA write lock does not wait for an item insert that only references the category through the
+	 * foreign key, and {@code FOR UPDATE} does.
+	 */
+	@Query(value = "SELECT * FROM event_categories WHERE id = :id AND event_id = :eventId FOR UPDATE", nativeQuery = true)
+	Optional<EventCategory> findWithLock(@Param("id") Long id, @Param("eventId") Long eventId);
+
 	/** A null {@code ignoredId} ignores no category. */
 	@Query("""
 			select count(c) > 0 from EventCategory c

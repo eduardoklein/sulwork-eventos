@@ -52,7 +52,7 @@ public class CategoryService {
 	public CategoryResponse update(Long eventId, Long id, CategoryRequest request) {
 		Event event = eventService.findSyncedEntity(eventId);
 		event.requireEditableMenu();
-		EventCategory category = findEntity(eventId, id);
+		EventCategory category = findEntityWithLock(eventId, id);
 		String name = request.name().strip();
 		requireFreeName(eventId, name, id);
 		if (request.unit() != category.getUnit() && categories.hasItems(id)) {
@@ -69,7 +69,7 @@ public class CategoryService {
 	public void delete(Long eventId, Long id) {
 		Event event = eventService.findSyncedEntity(eventId);
 		event.requireEditableMenu();
-		EventCategory category = findEntity(eventId, id);
+		EventCategory category = findEntityWithLock(eventId, id);
 		if (categories.hasItems(id)) {
 			throw new BusinessRuleException("Não é possível excluir uma categoria que ainda tem itens.");
 		}
@@ -78,6 +78,11 @@ public class CategoryService {
 
 	private EventCategory findEntity(Long eventId, Long id) {
 		return categories.findByIdAndEventId(id, eventId)
+				.orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
+	}
+
+	private EventCategory findEntityWithLock(Long eventId, Long id) {
+		return categories.findWithLock(id, eventId)
 				.orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
 	}
 
