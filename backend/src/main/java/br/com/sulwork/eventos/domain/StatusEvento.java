@@ -8,67 +8,68 @@ public enum StatusEvento {
 
 	RASCUNHO("Rascunho", true, false, false) {
 		@Override
-		public Set<StatusEvento> allowedTransitions() {
+		public Set<StatusEvento> transicoesPermitidas() {
 			return transicoes(ABERTO, CANCELADO);
 		}
 	},
 	ABERTO("Aberto", true, true, true) {
 		@Override
-		public Set<StatusEvento> allowedTransitions() {
+		public Set<StatusEvento> transicoesPermitidas() {
 			return transicoes(ENCERRADO, CANCELADO);
 		}
 	},
 	ENCERRADO("Encerrado", false, false, false) {
 		@Override
-		public Set<StatusEvento> allowedTransitions() {
+		public Set<StatusEvento> transicoesPermitidas() {
 			return transicoes(REALIZADO, CANCELADO);
 		}
 	},
 	REALIZADO("Realizado", false, false, false) {
 		@Override
-		public Set<StatusEvento> allowedTransitions() {
+		public Set<StatusEvento> transicoesPermitidas() {
 			return Set.of();
 		}
 	},
 	CANCELADO("Cancelado", false, false, false) {
 		@Override
-		public Set<StatusEvento> allowedTransitions() {
+		public Set<StatusEvento> transicoesPermitidas() {
 			return Set.of();
 		}
 	};
 
 	private final String descricao;
-	private final boolean catalogMutation;
-	private final boolean participantMutation;
-	private final boolean contributions;
+	private final boolean cardapioEditavel;
+	private final boolean participantesEditaveis;
+	private final boolean contribuicoesAbertas;
 
-	StatusEvento(String descricao, boolean catalogMutation, boolean participantMutation, boolean contributions) {
+	StatusEvento(String descricao, boolean cardapioEditavel, boolean participantesEditaveis,
+			boolean contribuicoesAbertas) {
 		this.descricao = descricao;
-		this.catalogMutation = catalogMutation;
-		this.participantMutation = participantMutation;
-		this.contributions = contributions;
+		this.cardapioEditavel = cardapioEditavel;
+		this.participantesEditaveis = participantesEditaveis;
+		this.contribuicoesAbertas = contribuicoesAbertas;
 	}
 
-	public abstract Set<StatusEvento> allowedTransitions();
+	public abstract Set<StatusEvento> transicoesPermitidas();
 
-	public boolean allowsCatalogMutation() {
-		return catalogMutation;
+	public boolean permiteAlterarCardapio() {
+		return cardapioEditavel;
 	}
 
-	public boolean allowsParticipantMutation() {
-		return participantMutation;
+	public boolean permiteAlterarParticipantes() {
+		return participantesEditaveis;
 	}
 
-	public boolean allowsContributions() {
-		return contributions;
+	public boolean aceitaContribuicoes() {
+		return contribuicoesAbertas;
 	}
 
-	public boolean canTransitionTo(StatusEvento novo) {
-		return allowedTransitions().contains(novo);
+	public boolean podeIrPara(StatusEvento novo) {
+		return transicoesPermitidas().contains(novo);
 	}
 
-	public boolean isTerminal() {
-		return allowedTransitions().isEmpty();
+	public boolean isFinal() {
+		return transicoesPermitidas().isEmpty();
 	}
 
 	public String getDescricao() {

@@ -53,7 +53,7 @@ public enum RestricaoAlimentar {
 		return caracteristicasEmConflito;
 	}
 
-	public ConflitoAlimentar findConflicts(Set<Alergeno> alergenosDoItem,
+	public ConflitoAlimentar encontrarConflitos(Set<Alergeno> alergenosDoItem,
 			Set<CaracteristicaAlimentar> caracteristicasDoItem) {
 		return new ConflitoAlimentar(
 				intersecao(alergenosEmConflito, alergenosDoItem, Alergeno.class),

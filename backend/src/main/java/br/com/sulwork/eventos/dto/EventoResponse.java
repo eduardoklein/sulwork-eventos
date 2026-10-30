@@ -36,7 +36,7 @@ public record EventoResponse(
 				evento.getStatus(),
 				evento.isPrazoExpirado(agora),
 				evento.isAbertoParaContribuicoes(agora),
-				evento.getStatus().allowedTransitions().stream().sorted(Comparator.naturalOrder()).toList(),
+				evento.getStatus().transicoesPermitidas().stream().sorted(Comparator.naturalOrder()).toList(),
 				evento.getCriadoEm(),
 				evento.getAtualizadoEm());
 	}

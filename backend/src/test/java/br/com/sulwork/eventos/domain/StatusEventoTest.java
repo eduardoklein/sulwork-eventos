@@ -28,14 +28,14 @@ class StatusEventoTest {
 	@ParameterizedTest
 	@EnumSource(StatusEvento.class)
 	void transicoesPermitidasSaoExatamenteAsDaTabela(StatusEvento origem) {
-		assertThat(origem.allowedTransitions()).containsExactlyInAnyOrderElementsOf(TRANSICOES_VALIDAS.get(origem));
+		assertThat(origem.transicoesPermitidas()).containsExactlyInAnyOrderElementsOf(TRANSICOES_VALIDAS.get(origem));
 	}
 
 	@ParameterizedTest
 	@EnumSource(StatusEvento.class)
-	void canTransitionToConcordaComATabelaParaTodosOsPares(StatusEvento origem) {
+	void podeIrParaConcordaComATabelaParaTodosOsPares(StatusEvento origem) {
 		for (StatusEvento destino : StatusEvento.values()) {
-			assertThat(origem.canTransitionTo(destino))
+			assertThat(origem.podeIrPara(destino))
 					.as("%s -> %s", origem, destino)
 					.isEqualTo(TRANSICOES_VALIDAS.get(origem).contains(destino));
 		}
@@ -43,44 +43,44 @@ class StatusEventoTest {
 
 	@Test
 	void transicoesInvalidasImportantes() {
-		assertThat(REALIZADO.canTransitionTo(ABERTO)).isFalse();
-		assertThat(RASCUNHO.canTransitionTo(REALIZADO)).isFalse();
-		assertThat(ENCERRADO.canTransitionTo(ABERTO)).isFalse();
-		assertThat(CANCELADO.canTransitionTo(ABERTO)).isFalse();
-		assertThat(ABERTO.canTransitionTo(RASCUNHO)).isFalse();
+		assertThat(REALIZADO.podeIrPara(ABERTO)).isFalse();
+		assertThat(RASCUNHO.podeIrPara(REALIZADO)).isFalse();
+		assertThat(ENCERRADO.podeIrPara(ABERTO)).isFalse();
+		assertThat(CANCELADO.podeIrPara(ABERTO)).isFalse();
+		assertThat(ABERTO.podeIrPara(RASCUNHO)).isFalse();
 	}
 
 	@ParameterizedTest
 	@EnumSource(StatusEvento.class)
 	void statusNaoPodeIrParaSiMesmo(StatusEvento status) {
-		assertThat(status.canTransitionTo(status)).isFalse();
+		assertThat(status.podeIrPara(status)).isFalse();
 	}
 
 	@Test
 	void soRealizadoECanceladoSaoFinais() {
-		assertThat(StatusEvento.values()).filteredOn(StatusEvento::isTerminal)
+		assertThat(StatusEvento.values()).filteredOn(StatusEvento::isFinal)
 				.containsExactlyInAnyOrder(REALIZADO, CANCELADO);
 	}
 
 	@Test
 	void soAbertoAceitaContribuicoesEInscricoes() {
 		for (StatusEvento status : StatusEvento.values()) {
-			assertThat(status.allowsContributions()).as("contribuições em %s", status).isEqualTo(status == ABERTO);
-			assertThat(status.allowsParticipantMutation()).as("inscrições em %s", status).isEqualTo(status == ABERTO);
+			assertThat(status.aceitaContribuicoes()).as("contribuições em %s", status).isEqualTo(status == ABERTO);
+			assertThat(status.permiteAlterarParticipantes()).as("inscrições em %s", status).isEqualTo(status == ABERTO);
 		}
 	}
 
 	@Test
 	void cardapioEditavelSoEmRascunhoEAberto() {
 		for (StatusEvento status : StatusEvento.values()) {
-			assertThat(status.allowsCatalogMutation()).as("cardápio em %s", status)
+			assertThat(status.permiteAlterarCardapio()).as("cardápio em %s", status)
 					.isEqualTo(status == RASCUNHO || status == ABERTO);
 		}
 	}
 
 	@Test
 	void conjuntoDeTransicoesNaoPodeSerAlterado() {
-		assertThatThrownBy(() -> RASCUNHO.allowedTransitions().add(REALIZADO))
+		assertThatThrownBy(() -> RASCUNHO.transicoesPermitidas().add(REALIZADO))
 				.isInstanceOf(UnsupportedOperationException.class);
 	}
 

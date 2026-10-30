@@ -52,7 +52,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 
 ## Idioma
 
-README, commits e interface em português. Termos do domínio ficam em português (`Evento`, `StatusEvento`). Termos técnicos ficam em inglês (`Controller`, `Service`).
+README, commits e interface em português. No código, o **domínio e as regras de negócio** ficam em português: entidades, enums, DTOs e os métodos que expressam uma regra (`podeIrPara`, `transicoesPermitidas`, `aceitaContribuicoes`, `encontrarConflitos`, `exigirCardapioEditavel`). Os **termos técnicos genéricos** ficam em inglês: o papel da classe (`Controller`, `Service`, `Repository`, `Request`, `Response`), as convenções do Java (`get`, `set`, `is`) e os nomes que o framework exige (`findByStatus`).
 
 ## Alérgenos, características e restrições
 

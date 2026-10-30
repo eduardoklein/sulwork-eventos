@@ -96,7 +96,7 @@ public class EventoService {
 		if (request.novoPrazoAlteracoes() != null && novo != StatusEvento.ABERTO) {
 			throw new BusinessRuleException("O novo prazo só vale ao abrir o evento.");
 		}
-		if (!atual.canTransitionTo(novo)) {
+		if (!atual.podeIrPara(novo)) {
 			throw new BusinessRuleException(transicaoInvalida(atual, novo));
 		}
 		if (novo == StatusEvento.ABERTO) {
@@ -156,10 +156,10 @@ public class EventoService {
 
 	private static String transicaoInvalida(StatusEvento atual, StatusEvento novo) {
 		String base = "Não é possível passar de " + atual.getDescricao() + " para " + novo.getDescricao() + ". ";
-		if (atual.isTerminal()) {
+		if (atual.isFinal()) {
 			return base + "Esse status é final.";
 		}
-		String permitidas = atual.allowedTransitions().stream().sorted()
+		String permitidas = atual.transicoesPermitidas().stream().sorted()
 				.map(StatusEvento::getDescricao).collect(Collectors.joining(", "));
 		return base + "Transições permitidas: " + permitidas + ".";
 	}

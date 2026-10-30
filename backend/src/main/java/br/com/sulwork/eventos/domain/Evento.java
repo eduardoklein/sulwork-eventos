@@ -88,11 +88,11 @@ public class Evento {
 	}
 
 	public boolean isAbertoParaContribuicoes(Instant agora) {
-		return status.allowsContributions() && !isPrazoExpirado(agora);
+		return status.aceitaContribuicoes() && !isPrazoExpirado(agora);
 	}
 
 	public void exigirCardapioEditavel() {
-		if (!status.allowsCatalogMutation()) {
+		if (!status.permiteAlterarCardapio()) {
 			throw new BusinessRuleException(
 					"Não é possível alterar o cardápio de um evento " + status.getDescricao().toLowerCase() + ".");
 		}
@@ -100,7 +100,7 @@ public class Evento {
 
 	/** Confere primeiro o status, depois o prazo. */
 	public void exigirContribuicoesAbertas(Instant agora) {
-		if (!status.allowsContributions()) {
+		if (!status.aceitaContribuicoes()) {
 			throw new BusinessRuleException("Só um evento aberto aceita contribuições. Este evento está "
 					+ status.getDescricao().toLowerCase() + ".");
 		}

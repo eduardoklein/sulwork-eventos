@@ -89,7 +89,7 @@ public class ParticipanteService {
 	}
 
 	private void exigirParticipantesEditaveis(Evento evento) {
-		if (!evento.getStatus().allowsParticipantMutation()) {
+		if (!evento.getStatus().permiteAlterarParticipantes()) {
 			throw new BusinessRuleException("Só um evento aberto aceita mudanças nos participantes. Este evento está "
 					+ evento.getStatus().getDescricao().toLowerCase() + ".");
 		}

@@ -31,7 +31,7 @@ class RestricaoAlimentarTest {
 
 	@Test
 	void itemComGlutenELactoseConflitaComVeganoSoEmLactose() {
-		ConflitoAlimentar conflito = VEGANO.findConflicts(Set.of(GLUTEN, LACTOSE), SEM_CARACTERISTICAS);
+		ConflitoAlimentar conflito = VEGANO.encontrarConflitos(Set.of(GLUTEN, LACTOSE), SEM_CARACTERISTICAS);
 
 		assertThat(conflito.alergenos()).containsExactly(LACTOSE);
 		assertThat(conflito.caracteristicas()).isEmpty();
@@ -40,19 +40,19 @@ class RestricaoAlimentarTest {
 	@ParameterizedTest
 	@EnumSource(RestricaoAlimentar.class)
 	void itemSemAlergenosNemCaracteristicasNaoConflitaComNenhumaRestricao(RestricaoAlimentar restricao) {
-		assertThat(restricao.findConflicts(SEM_ALERGENOS, SEM_CARACTERISTICAS).isVazio()).isTrue();
+		assertThat(restricao.encontrarConflitos(SEM_ALERGENOS, SEM_CARACTERISTICAS).isVazio()).isTrue();
 	}
 
 	@Test
 	void celiacoConflitaComGlutenEMaisNada() {
-		ConflitoAlimentar conflito = CELIACO_SEM_GLUTEN.findConflicts(Set.of(GLUTEN, OVO), SEM_CARACTERISTICAS);
+		ConflitoAlimentar conflito = CELIACO_SEM_GLUTEN.encontrarConflitos(Set.of(GLUTEN, OVO), SEM_CARACTERISTICAS);
 
 		assertThat(conflito.alergenos()).containsExactly(GLUTEN);
 	}
 
 	@Test
 	void vegetarianoAceitaOvoELaticinios() {
-		ConflitoAlimentar conflito = VEGETARIANO.findConflicts(Set.of(OVO, LACTOSE), SEM_CARACTERISTICAS);
+		ConflitoAlimentar conflito = VEGETARIANO.encontrarConflitos(Set.of(OVO, LACTOSE), SEM_CARACTERISTICAS);
 
 		assertThat(conflito.isVazio()).isTrue();
 	}
@@ -61,9 +61,9 @@ class RestricaoAlimentarTest {
 	void vegetarianoEveganoRecusamPeixeEFrutosDoMar() {
 		Set<Alergeno> item = Set.of(PEIXE, FRUTOS_DO_MAR);
 
-		assertThat(VEGETARIANO.findConflicts(item, SEM_CARACTERISTICAS).alergenos())
+		assertThat(VEGETARIANO.encontrarConflitos(item, SEM_CARACTERISTICAS).alergenos())
 				.containsExactlyInAnyOrder(PEIXE, FRUTOS_DO_MAR);
-		assertThat(VEGANO.findConflicts(item, SEM_CARACTERISTICAS).alergenos())
+		assertThat(VEGANO.encontrarConflitos(item, SEM_CARACTERISTICAS).alergenos())
 				.containsExactlyInAnyOrder(PEIXE, FRUTOS_DO_MAR);
 	}
 
@@ -71,15 +71,15 @@ class RestricaoAlimentarTest {
 	void vegetarianoEveganoRecusamCarneDeOrigemAnimal() {
 		Set<CaracteristicaAlimentar> item = Set.of(CARNE_ORIGEM_ANIMAL);
 
-		assertThat(VEGETARIANO.findConflicts(SEM_ALERGENOS, item).caracteristicas())
+		assertThat(VEGETARIANO.encontrarConflitos(SEM_ALERGENOS, item).caracteristicas())
 				.containsExactly(CARNE_ORIGEM_ANIMAL);
-		assertThat(VEGANO.findConflicts(SEM_ALERGENOS, item).caracteristicas())
+		assertThat(VEGANO.encontrarConflitos(SEM_ALERGENOS, item).caracteristicas())
 				.containsExactly(CARNE_ORIGEM_ANIMAL);
 	}
 
 	@Test
 	void conflitoMistoDevolveOsDoisTipos() {
-		ConflitoAlimentar conflito = VEGANO.findConflicts(Set.of(LACTOSE, GLUTEN), Set.of(CARNE_ORIGEM_ANIMAL, ALTO_SODIO));
+		ConflitoAlimentar conflito = VEGANO.encontrarConflitos(Set.of(LACTOSE, GLUTEN), Set.of(CARNE_ORIGEM_ANIMAL, ALTO_SODIO));
 
 		assertThat(conflito.alergenos()).containsExactly(LACTOSE);
 		assertThat(conflito.caracteristicas()).containsExactly(CARNE_ORIGEM_ANIMAL);
@@ -88,16 +88,16 @@ class RestricaoAlimentarTest {
 
 	@Test
 	void alergiaAPeixeNaoConflitaComFrutosDoMarENemOContrario() {
-		assertThat(ALERGIA_PEIXE.findConflicts(Set.of(FRUTOS_DO_MAR), SEM_CARACTERISTICAS).isVazio()).isTrue();
-		assertThat(ALERGIA_FRUTOS_DO_MAR.findConflicts(Set.of(PEIXE), SEM_CARACTERISTICAS).isVazio()).isTrue();
-		assertThat(ALERGIA_PEIXE.findConflicts(Set.of(PEIXE), SEM_CARACTERISTICAS).alergenos()).containsExactly(PEIXE);
+		assertThat(ALERGIA_PEIXE.encontrarConflitos(Set.of(FRUTOS_DO_MAR), SEM_CARACTERISTICAS).isVazio()).isTrue();
+		assertThat(ALERGIA_FRUTOS_DO_MAR.encontrarConflitos(Set.of(PEIXE), SEM_CARACTERISTICAS).isVazio()).isTrue();
+		assertThat(ALERGIA_PEIXE.encontrarConflitos(Set.of(PEIXE), SEM_CARACTERISTICAS).alergenos()).containsExactly(PEIXE);
 	}
 
 	@Test
 	void diabeticoEHipertensoConflitamComSuaCaracteristica() {
-		assertThat(DIABETICO_SEM_ACUCAR.findConflicts(SEM_ALERGENOS, Set.of(ACUCAR_ADICIONADO, ALTO_SODIO)).caracteristicas())
+		assertThat(DIABETICO_SEM_ACUCAR.encontrarConflitos(SEM_ALERGENOS, Set.of(ACUCAR_ADICIONADO, ALTO_SODIO)).caracteristicas())
 				.containsExactly(ACUCAR_ADICIONADO);
-		assertThat(HIPERTENSO_POUCO_SODIO.findConflicts(SEM_ALERGENOS, Set.of(ACUCAR_ADICIONADO, ALTO_SODIO)).caracteristicas())
+		assertThat(HIPERTENSO_POUCO_SODIO.encontrarConflitos(SEM_ALERGENOS, Set.of(ACUCAR_ADICIONADO, ALTO_SODIO)).caracteristicas())
 				.containsExactly(ALTO_SODIO);
 	}
 
@@ -105,7 +105,7 @@ class RestricaoAlimentarTest {
 	void conjuntosDeConflitoNaoPodemSerAlterados() {
 		assertThatThrownBy(() -> VEGANO.getAlergenosEmConflito().add(GLUTEN))
 				.isInstanceOf(UnsupportedOperationException.class);
-		assertThatThrownBy(() -> VEGANO.findConflicts(Set.of(LACTOSE), SEM_CARACTERISTICAS).alergenos().add(GLUTEN))
+		assertThatThrownBy(() -> VEGANO.encontrarConflitos(Set.of(LACTOSE), SEM_CARACTERISTICAS).alergenos().add(GLUTEN))
 				.isInstanceOf(UnsupportedOperationException.class);
 	}
 
