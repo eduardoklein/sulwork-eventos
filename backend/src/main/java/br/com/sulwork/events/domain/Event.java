@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import br.com.sulwork.events.exception.BusinessRuleException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +18,12 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+/**
+ * Writes only the columns that changed. Closing an expired event on a read or in the scheduler then touches only
+ * the status and the update time, and never undoes an edit another transaction committed in the meantime.
+ */
 @Entity
+@DynamicUpdate
 @Table(name = "events")
 public class Event {
 
