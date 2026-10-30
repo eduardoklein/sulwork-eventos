@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react'
+import { DomainOptionsProvider } from './domain/DomainOptionsProvider'
+import { EventsPage } from './events/EventsPage'
 import { NotificationsProvider } from './notifications/NotificationsProvider'
 import { routeHash, type Route } from './router/route'
 import { useRoute } from './router/useRoute'
@@ -49,18 +51,21 @@ export default function App() {
 
   return (
     <NotificationsProvider>
-      {/* A button, not a link: a link to "#main" would change the hash and the router would take it as a new screen. */}
-      <button
-        type="button"
-        onClick={() => mainRef.current?.focus()}
-        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2 focus:font-semibold"
-      >
-        Ir para o conteúdo
-      </button>
-      <Header />
-      <main ref={mainRef} tabIndex={-1} className="mx-auto max-w-5xl px-4 py-8 outline-none">
-        <h1 className="font-display text-3xl font-bold tracking-tight">{title}</h1>
-      </main>
+      <DomainOptionsProvider>
+        {/* A button, not a link: a link to "#main" would change the hash and the router would take it as a new screen. */}
+        <button
+          type="button"
+          onClick={() => mainRef.current?.focus()}
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2 focus:font-semibold"
+        >
+          Ir para o conteúdo
+        </button>
+        <Header />
+        <main ref={mainRef} tabIndex={-1} className="mx-auto max-w-5xl px-4 py-8 outline-none">
+          <h1 className="font-display text-3xl font-bold tracking-tight">{title}</h1>
+          {route.name === 'events' && <EventsPage />}
+        </main>
+      </DomainOptionsProvider>
     </NotificationsProvider>
   )
 }
