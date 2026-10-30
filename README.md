@@ -45,6 +45,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 31 | Qual é a funcionalidade livre, e como ela decide o que sugerir? | Sugestões do que levar: `GET /api/events/{id}/suggestions?participantId=X`. Veja a seção "Funcionalidade livre: sugestões do que levar". A prioridade vai de 0 a 100, em relação ao máximo que aquela pessoa poderia pontuar. Itens que a pessoa já contribui, itens completos e eventos que não aceitam contribuições ficam fora da lista. |
 | 32 | O que entra no resumo para compartilhar? | `GET /api/events/{id}/summary` devolve um texto pronto para colar em um grupo (WhatsApp, Slack ou Teams): o nome, a data, o prazo, a situação, a cobertura, o que ainda falta (obrigatórios primeiro) e quem já vai levar o quê. O texto não leva CPF nem restrições alimentares: ele vai para um grupo, e restrição alimentar é dado de saúde. |
 | 33 | Como o frontend recebe os rótulos, e como a API é documentada e liberada para o navegador? | `GET /api/domain/options` devolve todas as listas fechadas (tipos, status, unidades, alérgenos, características, restrições e níveis de prontidão) com o código e o texto de cada opção. Os rótulos ficam só no backend. O Swagger descreve cada rota. O CORS libera só a origem configurada em `APP_CORS_ALLOWED_ORIGINS`, nunca `*`. Veja a seção "Documentação da API e CORS". |
+| 34 | O sistema já nasce com dados de exemplo? | Sim. Cinco eventos, um em cada status, com pessoas e CPFs fictícios, entram na primeira subida. As datas são relativas ao momento da migration, para os eventos abertos continuarem abertos por semanas. Os dados ficam em uma pasta separada e se desligam com `APP_DEMO_DATA=false`. Veja a seção "Dados de demonstração". |
 
 ## Tecnologias escolhidas
 
@@ -210,3 +211,20 @@ Opcionais:
 **Opções do sistema.** `GET /api/domain/options` devolve, para cada lista fechada, o código que a API usa e o texto que o usuário lê, por exemplo `{"code": "CELIAC_GLUTEN_FREE", "description": "Celíaco (sem glúten)"}`. O frontend não repete a lista e nunca fica desatualizado. Os cinco status do evento mantêm os nomes que o enunciado manda.
 
 **CORS.** O navegador bloqueia chamadas de outra origem. Em desenvolvimento, o frontend roda em outra porta (`http://localhost:5173`). A API libera `/api/**` só para as origens da variável `APP_CORS_ALLOWED_ORIGINS` (uma lista separada por vírgulas, com `http://localhost:5173` como padrão). Ela nunca responde `*`, não aceita credenciais e só aceita os métodos e o cabeçalho que a API usa. No Docker, o nginx repassa `/api` na mesma origem do frontend, então o CORS nem entra em ação.
+
+## Dados de demonstração
+
+Quem avalia abre a aplicação e já vê o sistema funcionando, sem cadastrar nada. Na primeira subida, a migration `V1000__demo_data.sql` cria:
+
+| Evento | Status | O que mostra |
+| :--- | :--- | :--- |
+| Almoço de fim de ano | `ABERTO` | O evento completo: quatro categorias (uma em mililitros), 14 itens obrigatórios e opcionais com alérgenos, 8 participantes com restrições variadas, contribuições parciais, uma meta com déficit e um alerta de segurança alimentar (Hugo, que é vegano, diabético e hipertenso, só tem 4 de 14 itens seguros). |
+| Café da manhã de integração | `ABERTO` | Os obrigatórios garantidos e os opcionais ainda incompletos. |
+| Churrasco de confraternização | `RASCUNHO` | Só o cardápio montado, sem participantes. |
+| Lanche da tarde do time | `REALIZADO` | Um evento que já aconteceu, com tudo completo. |
+| Happy hour de aniversário | `CANCELADO` | O quinto status. |
+
+- **Datas relativas.** A migration calcula as datas a partir de "agora", no fuso do evento: os eventos abertos têm o prazo daqui a 15 e 45 dias. Com datas fixas, o exemplo envelheceria e todos os eventos apareceriam encerrados. Depois que o prazo passa, o encerramento automático acontece, o que também demonstra a regra.
+- **Pessoas fictícias.** Os nomes são inventados, e os CPFs passam na conta dos dígitos verificadores mas não pertencem a ninguém.
+- **Pasta separada, e uma chave para desligar.** Os dados ficam em `db/demo`, e não junto das migrations normais. A variável `APP_DEMO_DATA` (padrão `true`) liga e desliga a pasta. Os testes desligam, porque assumem um banco vazio. Para publicar sem dados de exemplo, defina `APP_DEMO_DATA=false` antes da primeira subida: desligar depois de aplicada faz o Flyway reclamar de uma migration que sumiu, e o jeito é recriar o banco.
+- **Versão alta.** A migration tem a versão 1000, para nunca colidir com as migrations futuras do schema.
