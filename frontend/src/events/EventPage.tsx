@@ -8,7 +8,7 @@ import { EventTabs } from './EventTabs'
 import { ContributionsTab } from './contributions/ContributionsTab'
 import { MenuTab } from './menu/MenuTab'
 import { ParticipantsTab } from './participants/ParticipantsTab'
-import { TAB_TITLES } from './tabTitles'
+import { SummaryTab } from './summary/SummaryTab'
 import { useEventData } from './useEventData'
 
 export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
@@ -72,12 +72,7 @@ export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
       {tab === 'contributions' && (
         <ContributionsTab event={event} items={items} participants={participants} contributions={contributions} onChanged={reload} />
       )}
-      {tab === 'summary' && (
-        // The content of the summary comes with step 35.
-        <section aria-label={TAB_TITLES[tab]} className="py-6 text-ink-soft">
-          <p>Esta aba chega nos próximos passos.</p>
-        </section>
-      )}
+      {tab === 'summary' && <SummaryTab event={event} items={items} participants={participants} onChanged={reload} />}
     </>
   )
 }

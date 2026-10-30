@@ -26,8 +26,12 @@ export function useAction<Field extends string = string>() {
     setFieldErrors({})
   }
 
-  /** `failed` is the message for a failure that has no text of its own, and `onDone` gets the answer after the success notice. */
-  const run = async <Result>(call: () => Promise<Result>, { done, failed, onDone }: { done: string; failed: string; onDone: (result: Result) => void }) => {
+  /**
+   * `failed` is the message for a failure that has no text of its own, and `onDone` gets the answer after the success
+   * notice. The screen is `busy` until the next call, or until `onDone` has taken the person away from it: a window
+   * that closes or a page that changes. Pass `staysOnScreen` when the screen stays, so it can be used again.
+   */
+  const run = async <Result>(call: () => Promise<Result>, { done, failed, onDone, staysOnScreen = false }: { done: string; failed: string; onDone: (result: Result) => void; staysOnScreen?: boolean }) => {
     reset()
     setBusy(true)
     let result: Result
@@ -44,6 +48,7 @@ export function useAction<Field extends string = string>() {
     }
     notify(done, 'success')
     onDone(result)
+    if (staysOnScreen) setBusy(false)
   }
 
   return { busy, message, fieldErrors, reject, reset, run }
