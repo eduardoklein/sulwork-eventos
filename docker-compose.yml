@@ -1,0 +1,44 @@
+# docker compose up --build
+# A interface abre em http://localhost:3000. Para mudar a porta: FRONTEND_PORT=3001 docker compose up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sulwork
+      POSTGRES_USER: ${DB_USERNAME:-sulwork}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sulwork}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/sulwork
+      DB_USERNAME: ${DB_USERNAME:-sulwork}
+      DB_PASSWORD: ${DB_PASSWORD:-sulwork}
+      APP_DEMO_DATA: ${APP_DEMO_DATA:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://localhost:8080/v3/api-docs || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  db-data:
