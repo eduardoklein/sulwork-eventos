@@ -42,6 +42,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 28 | Quanto do CPF a API mostra? | O CPF sai mascarado (`***.533.447-**`): só os seis dígitos do meio, o bastante para separar homônimos. O CPF completo só entra na inscrição e na busca por CPF exato. Não existe listagem geral de colaboradores. Restrição alimentar é dado de saúde, e sem login (decisão 8) quem conhece um CPF consegue ver o nome e as restrições da pessoa. É um risco aceito. |
 | 29 | Como funcionam as contribuições, e o que acontece com pedidos simultâneos? | `POST` cria a contribuição de uma pessoa para um item, e `PUT` altera a quantidade e a observação. Um segundo `POST` da mesma pessoa para o mesmo item devolve 409, e nada soma por acidente: um clique duplo não dobra o valor. A soma de todas as contribuições do item nunca passa da quantidade necessária (422, com o que ainda cabe). Só um evento aberto e dentro do prazo aceita incluir, alterar ou remover. **Concorrência:** antes de mudar uma contribuição, o sistema bloqueia a linha do item no banco (`SELECT ... FOR UPDATE`). Dois pedidos simultâneos não leem o mesmo saldo livre: o segundo espera o primeiro terminar e lê a soma correta. Editar a quantidade do item e excluí-lo passam pelo mesmo bloqueio. Teste: 20 pessoas disputam 1 unidade, e só uma contribuição entra. Sem o bloqueio, o mesmo teste aceita 7 contribuições. |
 | 30 | Como o sistema mostra quem pode ficar sem comer? | `GET /api/events/{id}/dietary-analysis` cruza as restrições de cada participante com os alérgenos e as características de cada item, pela matriz da seção "Alérgenos, características e restrições". Mostra, por pessoa, quantos itens são seguros e quais não são, com o motivo. Mostra, por restrição, quantas pessoas a têm e quantos itens são compatíveis. Gera alertas: `CRITICAL` quando uma pessoa com restrição não tem nenhum item seguro, `WARNING` quando menos de 35% do cardápio é seguro para ela, e `INFO` ("Cardápio inclusivo") quando não há outro alerta, há pessoas com restrição e o cardápio tem itens. Com o cardápio vazio, não há alertas. O sistema só avisa e não bloqueia. Um item sem nenhuma marca conta como seguro, então o aviso vale tanto quanto o cadastro dos itens. |
+| 31 | Qual é a funcionalidade livre, e como ela decide o que sugerir? | Sugestões do que levar: `GET /api/events/{id}/suggestions?participantId=X`. Veja a seção "Funcionalidade livre: sugestões do que levar". A prioridade vai de 0 a 100, em relação ao máximo que aquela pessoa poderia pontuar. Itens que a pessoa já contribui, itens completos e eventos que não aceitam contribuições ficam fora da lista. |
 
 ## Tecnologias escolhidas
 
@@ -142,3 +143,30 @@ alvo efetivo    = max(meta, soma dos itens da categoria)
 | `IN_PROGRESS` | os demais casos |
 
 Uma contribuição nunca passa do necessário do item, então 100% nos obrigatórios de uma categoria significa que todo item obrigatório dela está completo.
+
+## Funcionalidade livre: sugestões do que levar
+
+**O problema.** A pessoa entra no evento e não sabe o que levar. Escolher no escuro gera três falhas: tudo chega repetido, o que é essencial falta, e quem tem restrição alimentar recebe sugestões que não pode comer.
+
+**Como funciona.** `GET /api/events/{id}/suggestions?participantId=X` olha os itens que ainda têm saldo e os ordena pela urgência para aquela pessoa. Cada regra soma pontos:
+
+| Regra | Pontos |
+| :--- | :---: |
+| o item é obrigatório | +50 |
+| ninguém contribuiu ainda | +25 |
+| a cobertura do item está abaixo da média do evento | +20 |
+| a meta da categoria do item ainda não foi atingida | +20 |
+| o item é seguro para as restrições da pessoa (só quando ela tem restrições) | +25 |
+| o item **não** é seguro para as restrições da pessoa | −10 |
+
+Cada sugestão traz a quantidade pendente, a **quantidade sugerida**, a **prioridade** e os **motivos** em texto, um por regra que pontuou.
+
+**Decisões.**
+
+- **Prioridade de 0 a 100, e não a soma bruta.** A soma pode chegar a 140, e um número acima de 100 parece um erro. A prioridade é a soma dividida pelo máximo que aquela pessoa poderia ter (115 sem restrições, 140 com restrições), limitada a 0. Prioridade 100 quer dizer que o item pontua em todas as regras que se aplicam a ela. A ordem da lista usa os pontos brutos.
+- **Quantidade sugerida:** o saldo inteiro, se for até 3. Acima disso, metade do saldo, arredondada para cima. Sugerir só metade deixa espaço para outras pessoas dividirem itens grandes.
+- **Empate:** vence o item menos coberto, e depois o mais antigo.
+- **Média e meta sem misturar unidades.** A média de cobertura é a média da cobertura de cada item, sem somar quantidades. Assim 1000 mililitros não pesam mais que 2 unidades. A meta da categoria conta como atingida quando a soma contribuída chega a ela, ou quando a meta é zero.
+- **Item inseguro aparece, mas por último e com aviso.** O motivo diz o que conflita, por exemplo "Não é seguro para as suas restrições: Glúten." A pessoa decide: ela pode levar um item para os colegas, e a lista não fica vazia só porque o cardápio tem o alérgeno dela.
+- **O que fica fora da lista:** itens completos, itens com que a pessoa já contribui (um segundo `POST` daria 409, e a pessoa deve editar a contribuição), e qualquer item quando o evento não aceita mais contribuições.
+- **A conta é pura.** `SuggestionRanker` não conhece o banco, então os testes cobrem cada regra sem subir nada. `SuggestionService` só junta os dados e chama a conta.
