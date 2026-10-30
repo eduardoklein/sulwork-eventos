@@ -15,7 +15,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 1 | Quais transições de status existem? | Fluxo em linha: `RASCUNHO → ABERTO → ENCERRADO → REALIZADO`. O `CANCELADO` é possível a partir de `RASCUNHO`, `ABERTO` e `ENCERRADO`. `REALIZADO` e `CANCELADO` são finais. Não há reabertura. |
 | 2 | Como o prazo e o status se combinam? | A API confere o relógio em cada operação. Um job agendado muda `ABERTO` para `ENCERRADO` quando o prazo passa. O prazo não pode ser depois da data do evento. |
 | 3 | Como uma pessoa participa de vários eventos sem cadastro duplicado? | Cadastro único da pessoa, com CPF único, guarda nome e restrições alimentares. Uma inscrição liga a pessoa ao evento. Um índice único impede a mesma pessoa duas vezes no mesmo evento. |
-| 4 | Como calcular a cobertura? | Três visões, sem um número único: por item (com teto de 100%), por categoria (contra a meta) e geral (obrigatórios completos, e opcionais em separado). |
+| 4 | Como calcular a cobertura? | A conta roda dentro de cada categoria, onde a unidade é uma só, e o geral é a média das categorias. Veja a seção "Cálculo da cobertura". |
 | 5 | Como relacionar restrições alimentares e alérgenos? | Matriz fixa de conflitos, em listas fechadas. Veja a seção "Alérgenos, características e restrições". A visão "ver o cardápio como" um participante marca os itens em conflito. O sistema avisa e não bloqueia. |
 | 6 | Qual será a funcionalidade livre? | Sugestões do que levar (itens com maior falta e seguros para a restrição da pessoa) e resumo em texto para compartilhar. |
 | 7 | Como tratar o CPF? | A API aceita 11 dígitos ou o formato completo com máscara (`390.533.447-05`). Ela recusa letras e máscara pela metade. Ela guarda só os 11 dígitos, confere os dígitos verificadores (módulo 11) e recusa sequências repetidas. O formulário do frontend mostra a máscara. O sistema não consulta a Receita Federal: um CPF que passa na conta pode não pertencer a ninguém. Para identificar a pessoa e evitar duplicidade, isso basta. |
@@ -103,3 +103,38 @@ Somar e agrupar várias tabelas é trabalho do banco: trazer todas as linhas par
 - **Subconsulta das contribuições.** As contribuições entram já somadas por item. Se entrassem linha a linha, um item com 4 contribuições viraria 4 linhas, e a quantidade necessária dele seria somada 4 vezes. Um teste com 100 necessários e 4 contribuições de 10 prova que o resultado é 100 necessários e 40 contribuídos.
 - **`LEFT JOIN`.** Uma categoria sem itens continua na lista, com zeros. Com um `JOIN` comum, ela sumiria.
 - **`SUM(...) FILTER (WHERE ...)`.** Recurso do PostgreSQL que soma só as linhas que passam na condição. Ele separa obrigatórios de opcionais em uma única passada.
+
+## Cálculo da cobertura
+
+`GET /api/eventos/{id}/cobertura` mostra quanto das necessidades do evento foi atendido, em três níveis: por categoria, geral e prontidão.
+
+**Por que a conta é por categoria.** Cada categoria tem uma unidade (mililitros, gramas, unidades). Somar categorias diferentes misturaria unidades: 5000 mililitros pesariam mais que 40 salgados. Dentro de uma categoria a unidade é a mesma, então somar e comparar é válido. O geral é a média simples das categorias.
+
+**Cobertura de uma categoria** (obrigatórios valem 2, opcionais valem 1, e o que a meta pede além dos itens entra no total):
+
+```
+(2 × contribuído_obrigatórios + 1 × contribuído_opcionais)
+÷ (2 × necessário_obrigatórios + 1 × necessário_opcionais + 1 × déficit_da_meta)
+
+déficit_da_meta = max(0, meta − soma dos itens da categoria)
+alvo efetivo    = max(meta, soma dos itens da categoria)
+```
+
+- **Peso 2 nos obrigatórios:** sem eles, o evento não acontece.
+- **Déficit da meta no total:** sem ele, uma categoria com todos os itens prontos mostraria 100%, mesmo com a meta longe de ser atingida.
+- **Exemplo:** obrigatórios 6 de 6, opcionais 0 de 4, sem déficit: `(2×6 + 0) ÷ (2×6 + 4) = 75%`.
+- **Meta sem itens:** uma categoria com meta 20 e nenhum item vale 0%. Uma categoria sem itens e sem meta fica fora da média.
+
+**Geral e por tipo.** `percentualGeral` é a média da cobertura das categorias. `percentualObrigatorios` e `percentualOpcionais` são médias da cobertura de cada tipo, entre as categorias que têm itens daquele tipo. Quando não existe nenhum item do tipo, não falta nada, e o valor é 100. Todos os percentuais arredondam para baixo: só mostram 100 quando está completo.
+
+**Prontidão** (a primeira regra que vale):
+
+| Nível | Quando |
+| :--- | :--- |
+| `SEM_ITENS` | o evento não tem nenhum item |
+| `CRITICO` | a cobertura dos obrigatórios está abaixo de 50% |
+| `COMPLETO` | todos os itens estão completos e a meta de cada categoria foi atingida |
+| `OBRIGATORIOS_GARANTIDOS` | todos os itens obrigatórios estão completos |
+| `EM_ANDAMENTO` | os demais casos |
+
+Uma contribuição nunca passa do necessário do item, então 100% nos obrigatórios de uma categoria significa que todo item obrigatório dela está completo.
