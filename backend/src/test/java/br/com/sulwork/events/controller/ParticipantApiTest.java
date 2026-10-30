@@ -126,10 +126,12 @@ class ParticipantApiTest {
 	}
 
 	@Test
-	void restrictionOutsideListReturns400() throws Exception {
+	void restrictionOutsideListReturns400NamingTheListPosition() throws Exception {
 		enroll(saveEvent(EventStatus.ABERTO),
-				"{\"cpf\":\"" + CPF_ANA + "\",\"name\":\"Ana\",\"restrictions\":[\"COME_PEDRA\"]}")
-				.andExpect(status().isBadRequest());
+				"{\"cpf\":\"" + CPF_ANA + "\",\"name\":\"Ana\",\"restrictions\":[\"VEGAN\",\"COME_PEDRA\"]}")
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("Dados inválidos."))
+				.andExpect(jsonPath("$.errors[0].field").value("restrictions[1]"));
 	}
 
 	@Test

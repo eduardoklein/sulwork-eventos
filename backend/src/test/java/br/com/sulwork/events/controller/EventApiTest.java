@@ -135,6 +135,16 @@ class EventApiTest {
 	}
 
 	@Test
+	void invalidEnumValueReturns400NamingTheFieldAndTheAcceptedValues() throws Exception {
+		create(body("Lanche", "JANTAR", EVENT_DATE, FUTURE_DEADLINE, null, null))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("Dados inválidos."))
+				.andExpect(jsonPath("$.errors[0].field").value("type"))
+				.andExpect(jsonPath("$.errors[0].message")
+						.value("valor inválido 'JANTAR'. Use um destes: BREAKFAST, LUNCH, SNACK, GET_TOGETHER, OTHER."));
+	}
+
+	@Test
 	void findsExistingEvent() throws Exception {
 		Event event = saveEvent("Almoço", EventType.LUNCH, EventStatus.RASCUNHO, "2026-12-01T12:00:00");
 

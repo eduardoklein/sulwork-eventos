@@ -1,7 +1,9 @@
 package br.com.sulwork.events.exception;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 /** Every API error comes out as a ProblemDetail (RFC 7807), with the message in {@code detail}. */
 @RestControllerAdvice
@@ -61,12 +66,37 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleExceptionInternal(ex, problem, headers, status, request);
 	}
 
+	/** A value outside a closed list names the field and the accepted values, like a validation error. */
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
 			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		if (ex.getMostSpecificCause() instanceof InvalidFormatException invalid && invalid.getTargetType() != null
+				&& invalid.getTargetType().isEnum()) {
+			String accepted = Arrays.stream(invalid.getTargetType().getEnumConstants())
+					.map(constant -> ((Enum<?>) constant).name())
+					.collect(Collectors.joining(", "));
+			ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "Dados inválidos", "Dados inválidos.");
+			problem.setProperty("errors", List.of(new FieldErrorDetail(fieldPath(invalid.getPath()),
+					"valor inválido '" + invalid.getValue() + "'. Use um destes: " + accepted + ".")));
+			return handleExceptionInternal(ex, problem, headers, status, request);
+		}
 		return handleExceptionInternal(ex,
 				problem(HttpStatus.BAD_REQUEST, "Requisição inválida", "Corpo da requisição ilegível ou mal formado."),
 				headers, status, request);
+	}
+
+	/** Turns the JSON path into the field name the client sent, for example {@code restrictions[1]}. */
+	private static String fieldPath(List<JacksonException.Reference> path) {
+		StringBuilder field = new StringBuilder();
+		for (JacksonException.Reference reference : path) {
+			if (reference.getPropertyName() != null) {
+				field.append(field.isEmpty() ? "" : ".").append(reference.getPropertyName());
+			}
+			else if (reference.getIndex() >= 0) {
+				field.append('[').append(reference.getIndex()).append(']');
+			}
+		}
+		return field.toString();
 	}
 
 	@Override
