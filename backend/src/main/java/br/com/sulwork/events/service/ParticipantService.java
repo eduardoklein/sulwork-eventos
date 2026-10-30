@@ -2,6 +2,7 @@ package br.com.sulwork.events.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -49,23 +50,19 @@ public class ParticipantService {
 		Event event = eventService.findSyncedEntity(eventId);
 		requireEditableParticipants(event);
 		String cpf = CpfValidator.normalizeAndValidate(request.cpf());
+		Collaborator collaborator = collaborators.findByCpf(cpf).orElseGet(() -> newCollaborator(cpf, request));
+		if (participants.existsByEventIdAndCollaboratorId(eventId, collaborator.getId())) {
+			throw alreadyEnrolled();
+		}
 
+		EventParticipant participant = new EventParticipant(event, collaborator);
 		try {
-			Collaborator collaborator = collaborators.findByCpf(cpf).orElseGet(() -> newCollaborator(cpf, request));
-			if (collaborator.getId() != null
-					&& participants.existsByEventIdAndCollaboratorId(eventId, collaborator.getId())) {
-				throw alreadyEnrolled();
-			}
-			if (collaborator.getId() == null) {
-				collaborators.saveAndFlush(collaborator);
-			}
-			EventParticipant participant = new EventParticipant(event, collaborator);
 			participants.saveAndFlush(participant);
-			return ParticipantResponse.from(participant);
 		}
 		catch (DataIntegrityViolationException ex) {
 			throw alreadyEnrolled();
 		}
+		return ParticipantResponse.from(participant);
 	}
 
 	public void remove(Long eventId, Long id) {
@@ -74,13 +71,21 @@ public class ParticipantService {
 		participants.delete(findEntity(eventId, id));
 	}
 
+	/**
+	 * Creates the person. If another request created the same CPF in the meantime, that person is reused as is,
+	 * because an enrollment never changes an existing record.
+	 */
 	private Collaborator newCollaborator(String cpf, EnrollParticipantRequest request) {
 		if (request.name() == null || request.name().isBlank()) {
 			throw new BusinessRuleException("Informe o nome para um CPF novo.");
 		}
-		Collaborator collaborator = new Collaborator(request.name().strip(), cpf);
+		Optional<Long> createdId = collaborators.insertIfAbsent(request.name().strip(), cpf);
+		if (createdId.isEmpty()) {
+			return collaborators.findByCpf(cpf).orElseThrow();
+		}
+		Collaborator collaborator = collaborators.findById(createdId.get()).orElseThrow();
 		collaborator.getRestrictions().addAll(request.restrictions() == null ? new HashSet<>() : request.restrictions());
-		return collaborator;
+		return collaborators.saveAndFlush(collaborator);
 	}
 
 	private EventParticipant findEntity(Long eventId, Long id) {
