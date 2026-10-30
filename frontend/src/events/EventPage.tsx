@@ -1,14 +1,18 @@
-import type { EventTab } from '../router/route'
+import { useState } from 'react'
+import { routeHash, type EventTab } from '../router/route'
 import { EmptyState } from '../ui/EmptyState'
 import { buttonClass } from '../ui/styles'
 import { EventHeader } from './EventHeader'
 import { EventTabs } from './EventTabs'
 import { MenuTab } from './menu/MenuTab'
+import { ParticipantsTab } from './participants/ParticipantsTab'
 import { TAB_TITLES } from './tabTitles'
 import { useEventData } from './useEventData'
 
 export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
   const { state, reload, retry } = useEventData(id)
+  // The person whose view of the menu is on screen. It lives here, so it holds when the tab changes.
+  const [viewAs, setViewAs] = useState<number | null>(null)
 
   if (state.status === 'loading') {
     return (
@@ -34,7 +38,7 @@ export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
       </div>
     )
   }
-  const { event, categories, items, participants, contributions } = state.data
+  const { event, categories, items, participants, contributions, analysis } = state.data
   return (
     <>
       <EventHeader event={event} onChanged={reload} />
@@ -43,10 +47,33 @@ export function EventPage({ id, tab }: { id: number; tab: EventTab }) {
         current={tab}
         counts={{ menu: items.length, participants: participants.length, contributions: contributions.length }}
       />
-      {tab === 'menu' ? (
-        <MenuTab event={event} categories={categories} items={items} onChanged={reload} />
-      ) : (
-        // The content of the other tabs comes with steps 32 to 35.
+      {tab === 'menu' && (
+        <MenuTab
+          event={event}
+          categories={categories}
+          items={items}
+          participants={participants}
+          analysis={analysis}
+          viewAs={viewAs}
+          onViewAsChange={setViewAs}
+          onChanged={reload}
+        />
+      )}
+      {tab === 'participants' && (
+        <ParticipantsTab
+          event={event}
+          participants={participants}
+          contributions={contributions}
+          analysis={analysis}
+          onViewMenu={(participantId) => {
+            setViewAs(participantId)
+            window.location.hash = routeHash({ name: 'event', id, tab: 'menu' })
+          }}
+          onChanged={reload}
+        />
+      )}
+      {(tab === 'summary' || tab === 'contributions') && (
+        // The content of the other tabs comes with steps 34 and 35.
         <section aria-label={TAB_TITLES[tab]} className="py-6 text-ink-soft">
           <p>Esta aba chega nos próximos passos.</p>
         </section>

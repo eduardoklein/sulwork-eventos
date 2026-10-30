@@ -7,6 +7,7 @@ export function ConfirmDialog({
   open,
   title,
   confirmLabel,
+  confirmDisabled = false,
   danger = false,
   busy,
   error,
@@ -17,6 +18,8 @@ export function ConfirmDialog({
   open: boolean
   title: string
   confirmLabel: string
+  /** The action is not ready yet, for example while the form still waits for something. */
+  confirmDisabled?: boolean
   danger?: boolean
   busy: boolean
   error: string | null
@@ -41,7 +44,7 @@ export function ConfirmDialog({
           <button type="button" onClick={onCancel} disabled={busy} className={buttonClass('secondary')}>
             Voltar
           </button>
-          <button type="submit" disabled={busy} className={buttonClass(danger ? 'danger' : 'primary')}>
+          <button type="submit" disabled={busy || confirmDisabled} className={buttonClass(danger ? 'danger' : 'primary')}>
             {busy ? 'Salvando…' : confirmLabel}
           </button>
         </div>

@@ -3,22 +3,46 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { DomainOptionsProvider } from '../../domain/DomainOptionsProvider'
 import { NotificationsProvider } from '../../notifications/NotificationsProvider'
-import { domainOptions, failure, makeCategory, makeEvent, makeItem, stubApi } from '../../test/fakeApi'
-import type { Category, FoodEvent, Item } from '../../types/api'
+import { domainOptions, failure, makeAnalysis, makeCategory, makeEvent, makeItem, makeParticipant, stubApi } from '../../test/fakeApi'
+import type { Category, DietaryAnalysis, FoodEvent, Item, Participant } from '../../types/api'
 import { MenuTab } from './MenuTab'
 
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status })
 
-function renderTab({ categories = [], items = [], event = makeEvent({ id: 1, name: 'Almoço' }) }: { categories?: Category[]; items?: Item[]; event?: FoodEvent } = {}) {
+function renderTab({
+  categories = [],
+  items = [],
+  event = makeEvent({ id: 1, name: 'Almoço' }),
+  participants = [],
+  analysis = makeAnalysis(),
+  viewAs = null,
+}: {
+  categories?: Category[]
+  items?: Item[]
+  event?: FoodEvent
+  participants?: Participant[]
+  analysis?: DietaryAnalysis
+  viewAs?: number | null
+} = {}) {
   const onChanged = vi.fn()
+  const onViewAsChange = vi.fn()
   render(
     <NotificationsProvider>
       <DomainOptionsProvider>
-        <MenuTab event={event} categories={categories} items={items} onChanged={onChanged} />
+        <MenuTab
+          event={event}
+          categories={categories}
+          items={items}
+          participants={participants}
+          analysis={analysis}
+          viewAs={viewAs}
+          onViewAsChange={onViewAsChange}
+          onChanged={onChanged}
+        />
       </DomainOptionsProvider>
     </NotificationsProvider>,
   )
-  return { onChanged }
+  return { onChanged, onViewAsChange }
 }
 
 const sent = (fetchMock: ReturnType<typeof stubApi>, method: string, address: string) => {
@@ -374,5 +398,85 @@ describe('MenuTab: an event that does not take changes', () => {
 
     expect(screen.getByRole('button', { name: 'Adicionar categoria' })).toBeInTheDocument()
     expect(screen.queryByText(/O cardápio não muda mais/)).not.toBeInTheDocument()
+  })
+})
+
+describe('MenuTab: view the menu as a participant', () => {
+  const ana = makeParticipant({ id: 1, name: 'Ana', restrictions: ['CELIAC_GLUTEN_FREE'] })
+  const bia = makeParticipant({ id: 2, name: 'Bia' })
+  const farofa = makeItem({ id: 8, name: 'Farofa' })
+  const analysis = makeAnalysis({
+    totalItems: 2,
+    participants: [
+      {
+        participantId: 1,
+        name: 'Ana',
+        restrictions: ['CELIAC_GLUTEN_FREE'],
+        totalItems: 2,
+        safeItems: 1,
+        unsafeItems: [{ itemId: 7, itemName: 'Lasanha', conflictingAllergens: ['GLUTEN', 'LACTOSE'], conflictingCharacteristics: ['ANIMAL_MEAT'] }],
+      },
+      { participantId: 2, name: 'Bia', restrictions: [], totalItems: 2, safeItems: 2, unsafeItems: [] },
+    ],
+  })
+
+  it('has no selector when the event has no participants', () => {
+    stubApi({ '/api/domain/options': domainOptions })
+
+    renderTab({ categories: [dishes], items: [lasagna] })
+
+    expect(screen.queryByLabelText('Ver o cardápio como')).not.toBeInTheDocument()
+  })
+
+  it('lists the participants, starting with nobody, and tells the screen who was chosen', async () => {
+    stubApi({ '/api/domain/options': domainOptions })
+    const user = userEvent.setup()
+    const { onViewAsChange } = renderTab({ categories: [dishes], items: [lasagna], participants: [ana, bia], analysis })
+
+    const select = screen.getByLabelText('Ver o cardápio como')
+    expect(Array.from((select as HTMLSelectElement).options).map((option) => option.text)).toEqual(['Ninguém', 'Ana', 'Bia'])
+    expect(select).toHaveValue('')
+    await user.selectOptions(select, 'Ana')
+
+    expect(onViewAsChange).toHaveBeenCalledWith(1)
+    await user.selectOptions(select, 'Ninguém')
+    expect(onViewAsChange).toHaveBeenLastCalledWith(null)
+  })
+
+  it('shows no safety marks when nobody is chosen', () => {
+    stubApi({ '/api/domain/options': domainOptions })
+
+    renderTab({ categories: [dishes], items: [lasagna], participants: [ana], analysis })
+
+    expect(screen.queryByText(/Seguro para/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Não é seguro/)).not.toBeInTheDocument()
+  })
+
+  it('marks each item as safe, or as not safe with the reason, for the chosen person', async () => {
+    stubApi({ '/api/domain/options': domainOptions })
+
+    renderTab({ categories: [dishes], items: [lasagna, farofa], participants: [ana, bia], analysis, viewAs: 1 })
+
+    expect(await screen.findByText('Não é seguro: contém glúten, lactose; carne de origem animal')).toBeInTheDocument()
+    expect(screen.getByText('Seguro para Ana')).toBeInTheDocument()
+    expect(screen.getByLabelText('Ver o cardápio como')).toHaveValue('1')
+  })
+
+  it('marks every item as safe for a person with no restrictions', () => {
+    stubApi({ '/api/domain/options': domainOptions })
+
+    renderTab({ categories: [dishes], items: [lasagna, farofa], participants: [ana, bia], analysis, viewAs: 2 })
+
+    expect(screen.getAllByText('Seguro para Bia')).toHaveLength(2)
+    expect(screen.queryByText(/Não é seguro/)).not.toBeInTheDocument()
+  })
+
+  it('counts a chosen person who left the event as nobody', () => {
+    stubApi({ '/api/domain/options': domainOptions })
+
+    renderTab({ categories: [dishes], items: [lasagna], participants: [bia], analysis, viewAs: 1 })
+
+    expect(screen.getByLabelText('Ver o cardápio como')).toHaveValue('')
+    expect(screen.queryByText(/Seguro para|Não é seguro/)).not.toBeInTheDocument()
   })
 })

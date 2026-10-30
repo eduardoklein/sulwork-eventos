@@ -8,6 +8,8 @@ import { Section } from '../../ui/Section'
 import { buttonClass } from '../../ui/styles'
 import { DeleteDialog } from './DeleteDialog'
 import { ItemDialog } from './ItemDialog'
+import { ItemSafety } from './ItemSafety'
+import type { Viewer } from './safety'
 
 type Dialog = { kind: 'form'; item?: Item; categoryId?: number } | { kind: 'delete'; item: Item } | null
 
@@ -16,12 +18,14 @@ export function ItemsSection({
   categories,
   items,
   editable,
+  viewer,
   onChanged,
 }: {
   eventId: number
   categories: Category[]
   items: Item[]
   editable: boolean
+  viewer: Viewer | null
   onChanged: () => void
 }) {
   const [dialog, setDialog] = useState<Dialog>(null)
@@ -38,6 +42,7 @@ export function ItemsSection({
             category={category}
             items={items.filter((item) => item.categoryId === category.id)}
             editable={editable}
+            viewer={viewer}
             onAdd={() => setDialog({ kind: 'form', categoryId: category.id })}
             onEdit={(item) => setDialog({ kind: 'form', item })}
             onDelete={(item) => setDialog({ kind: 'delete', item })}
@@ -65,6 +70,7 @@ function ItemGroup({
   category,
   items,
   editable,
+  viewer,
   onAdd,
   onEdit,
   onDelete,
@@ -72,6 +78,7 @@ function ItemGroup({
   category: Category
   items: Item[]
   editable: boolean
+  viewer: Viewer | null
   onAdd: () => void
   onEdit: (item: Item) => void
   onDelete: (item: Item) => void
@@ -91,7 +98,7 @@ function ItemGroup({
       ) : (
         <ul className="divide-y divide-line border-y border-line bg-surface">
           {items.map((item) => (
-            <ItemRow key={item.id} item={item} editable={editable} onEdit={() => onEdit(item)} onDelete={() => onDelete(item)} />
+            <ItemRow key={item.id} item={item} editable={editable} viewer={viewer} onEdit={() => onEdit(item)} onDelete={() => onDelete(item)} />
           ))}
         </ul>
       )}
@@ -99,7 +106,19 @@ function ItemGroup({
   )
 }
 
-function ItemRow({ item, editable, onEdit, onDelete }: { item: Item; editable: boolean; onEdit: () => void; onDelete: () => void }) {
+function ItemRow({
+  item,
+  editable,
+  viewer,
+  onEdit,
+  onDelete,
+}: {
+  item: Item
+  editable: boolean
+  viewer: Viewer | null
+  onEdit: () => void
+  onDelete: () => void
+}) {
   const options = useDomainOptions()
   const hasContributions = item.contributedQuantity > 0
   const allergens = item.allergens.map((code) => labelFor(options?.allergens, code))
@@ -109,6 +128,7 @@ function ItemRow({ item, editable, onEdit, onDelete }: { item: Item; editable: b
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <h4 className="font-semibold">{item.name}</h4>
         <Chip tone={item.mandatory ? 'pen' : 'neutral'}>{item.mandatory ? 'Obrigatório' : 'Opcional'}</Chip>
+        {viewer && <ItemSafety item={item} viewer={viewer} />}
       </div>
       <p className="text-sm text-ink-soft">
         {item.contributedQuantity} de {item.requiredQuantity} ({labelFor(options?.measureUnits, item.unit).toLowerCase()})

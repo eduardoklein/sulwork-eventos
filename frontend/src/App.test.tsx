@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
-import { domainOptions, makeEvent, stubApi } from './test/fakeApi'
+import { domainOptions, makeAnalysis, makeEvent, stubApi } from './test/fakeApi'
 
 // jsdom fires `hashchange` in a later task, like a browser, so the tests wait for the screen to change.
 async function goTo(hash: string) {
@@ -104,6 +104,7 @@ describe('App', () => {
       '/api/events/5/items': [],
       '/api/events/5/participants': [],
       '/api/events/5/contributions': [],
+      '/api/events/5/dietary-analysis': makeAnalysis(),
     })
     window.location.hash = '#/events/5/menu'
 

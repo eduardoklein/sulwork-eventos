@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import type { Category, DomainOptions, FoodEvent, Item } from '../types/api'
+import type { Category, DietaryAnalysis, DomainOptions, FoodEvent, Item, Participant } from '../types/api'
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -56,7 +56,11 @@ export const domainOptions: DomainOptions = {
     { code: 'ADDED_SUGAR', description: 'Açúcar adicionado' },
     { code: 'HIGH_SODIUM', description: 'Rico em sal' },
   ],
-  dietaryRestrictions: [],
+  dietaryRestrictions: [
+    { code: 'LACTOSE_INTOLERANCE', description: 'Intolerância à lactose' },
+    { code: 'CELIAC_GLUTEN_FREE', description: 'Celíaco, sem glúten' },
+    { code: 'VEGAN', description: 'Vegano' },
+  ],
   eventReadiness: [
     { code: 'NO_ITEMS', description: 'Sem itens' },
     { code: 'CRITICAL', description: 'Crítico' },
@@ -101,6 +105,20 @@ export function makeItem(overrides: Partial<Item> & Pick<Item, 'id' | 'name'>): 
     characteristics: [],
     ...overrides,
   }
+}
+
+export function makeParticipant(overrides: Partial<Participant> & Pick<Participant, 'id' | 'name'>): Participant {
+  return {
+    collaboratorId: overrides.id * 10,
+    cpf: '***.533.447-**',
+    restrictions: [],
+    enrolledAt: '2026-10-29T10:00:00',
+    ...overrides,
+  }
+}
+
+export function makeAnalysis(overrides: Partial<DietaryAnalysis> = {}): DietaryAnalysis {
+  return { totalItems: 0, participants: [], restrictions: [], alerts: [], ...overrides }
 }
 
 export function makeCoverage(overallPercentage: number | null, readiness: string = 'IN_PROGRESS') {

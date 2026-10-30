@@ -8,6 +8,7 @@ export function DeleteDialog({
   title,
   text,
   done,
+  confirmLabel = 'Excluir',
   remove,
   onDeleted,
   onClose,
@@ -15,6 +16,7 @@ export function DeleteDialog({
   title: string
   text: string
   done: string
+  confirmLabel?: string
   remove: () => Promise<void>
   onDeleted: () => void
   onClose: () => void
@@ -37,7 +39,7 @@ export function DeleteDialog({
   }
 
   return (
-    <ConfirmDialog open title={title} confirmLabel="Excluir" danger busy={busy} error={error} onConfirm={confirm} onCancel={onClose}>
+    <ConfirmDialog open title={title} confirmLabel={confirmLabel} danger busy={busy} error={error} onConfirm={confirm} onCancel={onClose}>
       <p>{text}</p>
     </ConfirmDialog>
   )

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { DomainOptionsProvider } from '../domain/DomainOptionsProvider'
 import { NotificationsProvider } from '../notifications/NotificationsProvider'
 import type { EventTab } from '../router/route'
-import { domainOptions, failure, makeEvent, stubApi } from '../test/fakeApi'
+import { domainOptions, failure, makeAnalysis, makeEvent, makeParticipant, stubApi } from '../test/fakeApi'
 import type { FoodEvent } from '../types/api'
 import { EventPage } from './EventPage'
 
@@ -27,8 +27,9 @@ function stubEvent(event: FoodEvent, extra: Record<string, unknown> = {}) {
     '/api/events/1': event,
     '/api/events/1/categories': [],
     '/api/events/1/items': [{ id: 1 }, { id: 2 }, { id: 3 }],
-    '/api/events/1/participants': [{ id: 1 }, { id: 2 }],
+    '/api/events/1/participants': [makeParticipant({ id: 1, name: 'Ana Souza' }), makeParticipant({ id: 2, name: 'Bia Lima' })],
     '/api/events/1/contributions': [{ id: 1 }],
+    '/api/events/1/dietary-analysis': makeAnalysis(),
     ...extra,
   })
 }
@@ -115,6 +116,50 @@ describe('EventPage: header and tabs', () => {
   })
 })
 
+describe('EventPage: view the menu as a participant', () => {
+  it('holds the chosen person when the tab changes, and starts with the person of "Ver cardápio"', async () => {
+    stubEvent(open)
+    const user = userEvent.setup()
+    const view = renderPage('participants')
+
+    await user.click(await screen.findByRole('button', { name: 'Ver cardápio de Bia Lima' }))
+    expect(window.location.hash).toBe('#/events/1/menu')
+    view.rerender(
+      <NotificationsProvider>
+        <DomainOptionsProvider>
+          <EventPage id={1} tab="menu" />
+        </DomainOptionsProvider>
+      </NotificationsProvider>,
+    )
+
+    expect(screen.getByLabelText('Ver o cardápio como')).toHaveDisplayValue('Bia Lima')
+    view.rerender(
+      <NotificationsProvider>
+        <DomainOptionsProvider>
+          <EventPage id={1} tab="summary" />
+        </DomainOptionsProvider>
+      </NotificationsProvider>,
+    )
+    view.rerender(
+      <NotificationsProvider>
+        <DomainOptionsProvider>
+          <EventPage id={1} tab="menu" />
+        </DomainOptionsProvider>
+      </NotificationsProvider>,
+    )
+    expect(screen.getByLabelText('Ver o cardápio como')).toHaveDisplayValue('Bia Lima')
+  })
+
+  it('loads the dietary analysis together with the rest', async () => {
+    const fetchMock = stubEvent(open)
+
+    renderPage()
+
+    await screen.findByRole('heading', { level: 1 })
+    expect(fetchMock.mock.calls.map(([address]) => address)).toContain('/api/events/1/dietary-analysis')
+  })
+})
+
 describe('EventPage: loading failures', () => {
   it('says the event was not found, with a way back to the list', async () => {
     stubApi({
@@ -124,6 +169,7 @@ describe('EventPage: loading failures', () => {
       '/api/events/1/items': [],
       '/api/events/1/participants': [],
       '/api/events/1/contributions': [],
+      '/api/events/1/dietary-analysis': makeAnalysis(),
     })
 
     renderPage()
