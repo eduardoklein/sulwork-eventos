@@ -43,6 +43,7 @@ O enunciado deixa regras abertas de propósito. Esta seção lista cada ambiguid
 | 29 | Como funcionam as contribuições, e o que acontece com pedidos simultâneos? | `POST` cria a contribuição de uma pessoa para um item, e `PUT` altera a quantidade e a observação. Um segundo `POST` da mesma pessoa para o mesmo item devolve 409, e nada soma por acidente: um clique duplo não dobra o valor. A soma de todas as contribuições do item nunca passa da quantidade necessária (422, com o que ainda cabe). Só um evento aberto e dentro do prazo aceita incluir, alterar ou remover. **Concorrência:** antes de mudar uma contribuição, o sistema bloqueia a linha do item no banco (`SELECT ... FOR UPDATE`). Dois pedidos simultâneos não leem o mesmo saldo livre: o segundo espera o primeiro terminar e lê a soma correta. Editar a quantidade do item e excluí-lo passam pelo mesmo bloqueio. Teste: 20 pessoas disputam 1 unidade, e só uma contribuição entra. Sem o bloqueio, o mesmo teste aceita 7 contribuições. |
 | 30 | Como o sistema mostra quem pode ficar sem comer? | `GET /api/events/{id}/dietary-analysis` cruza as restrições de cada participante com os alérgenos e as características de cada item, pela matriz da seção "Alérgenos, características e restrições". Mostra, por pessoa, quantos itens são seguros e quais não são, com o motivo. Mostra, por restrição, quantas pessoas a têm e quantos itens são compatíveis. Gera alertas: `CRITICAL` quando uma pessoa com restrição não tem nenhum item seguro, `WARNING` quando menos de 35% do cardápio é seguro para ela, e `INFO` ("Cardápio inclusivo") quando não há outro alerta, há pessoas com restrição e o cardápio tem itens. Com o cardápio vazio, não há alertas. O sistema só avisa e não bloqueia. Um item sem nenhuma marca conta como seguro, então o aviso vale tanto quanto o cadastro dos itens. |
 | 31 | Qual é a funcionalidade livre, e como ela decide o que sugerir? | Sugestões do que levar: `GET /api/events/{id}/suggestions?participantId=X`. Veja a seção "Funcionalidade livre: sugestões do que levar". A prioridade vai de 0 a 100, em relação ao máximo que aquela pessoa poderia pontuar. Itens que a pessoa já contribui, itens completos e eventos que não aceitam contribuições ficam fora da lista. |
+| 32 | O que entra no resumo para compartilhar? | `GET /api/events/{id}/summary` devolve um texto pronto para colar em um grupo (WhatsApp, Slack ou Teams): o nome, a data, o prazo, a situação, a cobertura, o que ainda falta (obrigatórios primeiro) e quem já vai levar o quê. O texto não leva CPF nem restrições alimentares: ele vai para um grupo, e restrição alimentar é dado de saúde. |
 
 ## Tecnologias escolhidas
 
@@ -170,3 +171,33 @@ Cada sugestão traz a quantidade pendente, a **quantidade sugerida**, a **priori
 - **Item inseguro aparece, mas por último e com aviso.** O motivo diz o que conflita, por exemplo "Não é seguro para as suas restrições: Glúten." A pessoa decide: ela pode levar um item para os colegas, e a lista não fica vazia só porque o cardápio tem o alérgeno dela.
 - **O que fica fora da lista:** itens completos, itens com que a pessoa já contribui (um segundo `POST` daria 409, e a pessoa deve editar a contribuição), e qualquer item quando o evento não aceita mais contribuições.
 - **A conta é pura.** `SuggestionRanker` não conhece o banco, então os testes cobrem cada regra sem subir nada. `SuggestionService` só junta os dados e chama a conta.
+
+### Resumo para compartilhar
+
+O organizador cobra a equipe no grupo da empresa. `GET /api/events/{id}/summary` monta o texto dessa cobrança, com o que está nos dados do evento:
+
+```
+*Almoço de fim de ano* (Almoço)
+Data: 18/12/2026 às 12:00 (America/Sao_Paulo)
+Prazo para contribuir: 16/12/2026 às 18:00
+Situação: Aberto
+
+*Cobertura*
+Geral: 47% | Obrigatórios: 100% | Opcionais: 25%
+Prontidão: Obrigatórios garantidos
+
+*O que ainda falta*
+Obrigatórios:
+- Lasagna (Pratos): faltam 4 (unidade)
+Opcionais:
+- Suco (Bebidas): faltam 1000 (mililitro)
+
+*Quem já vai levar*
+- Ana: Lasagna 6 (unidade)
+- Beto: Suco 1000 (mililitro)
+```
+
+- **Formato.** A resposta é um JSON com o campo `text`, para a tela ter um botão "Copiar". Os títulos usam um asterisco, que o WhatsApp e o Slack mostram em negrito. O Teams mostra os asteriscos, o que não atrapalha a leitura.
+- **Ordem do que falta.** Obrigatórios primeiro e, dentro de cada grupo, os itens menos cobertos primeiro.
+- **O que fica de fora.** CPF e restrições alimentares nunca entram no texto. O texto vai para um grupo, e restrição alimentar é dado de saúde. O aviso de quem pode ficar sem comer fica na análise alimentar, que só o organizador vê.
+- **Casos vazios.** Sem itens, o texto diz "Ainda não há itens no cardápio." Sem nada faltando, diz "Nada: o cardápio está completo." Sem contribuições, diz "Ninguém contribuiu ainda."
