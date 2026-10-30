@@ -130,7 +130,7 @@ describe('EventFormPage: creating', () => {
     renderPage(1)
 
     expect(await screen.findByText('Europe/Lisbon')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+    await user.click(screen.getByRole('button', { name: 'Salvar evento' }))
 
     await waitFor(() => expect(bodyOfLastCall(fetchMock, 'PUT')?.timeZone).toBe('Europe/Lisbon'))
   })
@@ -246,7 +246,7 @@ describe('EventFormPage: editing', () => {
     const name = await screen.findByLabelText('Nome')
     await user.clear(name)
     await user.type(name, 'Almoço')
-    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+    await user.click(screen.getByRole('button', { name: 'Salvar evento' }))
 
     await waitFor(() => expect(window.location.hash).toBe('#/events/1/summary'))
     const body = bodyOfLastCall(fetchMock, 'PUT')
@@ -264,7 +264,7 @@ describe('EventFormPage: editing', () => {
     const user = userEvent.setup()
     renderPage(1)
 
-    await user.click(await screen.findByRole('button', { name: 'Salvar' }))
+    await user.click(await screen.findByRole('button', { name: 'Salvar evento' }))
 
     expect(await screen.findByText('O prazo de um evento aberto precisa estar no futuro.')).toHaveAttribute('role', 'alert')
     expect(screen.getByLabelText('Nome')).toHaveValue('Almoço de fim de ano')

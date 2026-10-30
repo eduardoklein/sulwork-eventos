@@ -91,7 +91,7 @@ export function ContributionDialog({
     <ConfirmDialog
       open
       title={contribution ? 'Editar contribuição' : 'Registrar contribuição'}
-      confirmLabel="Salvar"
+      confirmLabel="Salvar contribuição"
       busy={busy}
       error={message}
       onConfirm={save}

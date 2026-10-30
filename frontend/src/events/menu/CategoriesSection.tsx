@@ -70,6 +70,7 @@ export function CategoriesSection({
           title="Excluir esta categoria?"
           text={`A categoria ${dialog.category.name} será apagada. Isso não pode ser desfeito.`}
           done="Categoria excluída."
+          confirmLabel="Excluir categoria"
           remove={() => deleteCategory(eventId, dialog.category.id)}
           onDeleted={onChanged}
           onClose={close}

@@ -28,7 +28,7 @@ describe('App', () => {
   it('links to the API documentation in a new tab and to the new event screen', () => {
     render(<App />)
 
-    const docs = screen.getByRole('link', { name: 'Documentação da API' })
+    const docs = screen.getByRole('link', { name: 'Documentação técnica' })
     expect(docs).toHaveAttribute('href', '/swagger-ui.html')
     expect(docs).toHaveAttribute('target', '_blank')
     expect(docs).toHaveAttribute('rel', expect.stringContaining('noopener'))

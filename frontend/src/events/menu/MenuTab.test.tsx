@@ -95,7 +95,7 @@ describe('MenuTab: categories', () => {
     await user.click(screen.getByRole('button', { name: 'Adicionar categoria' }))
     const dialog = screen.getByRole('dialog', { name: 'Adicionar categoria' })
     await user.clear(within(dialog).getByLabelText('Meta de quantidade'))
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar categoria' }))
 
     expect(within(dialog).getByText('Informe o nome da categoria.')).toBeInTheDocument()
     expect(within(dialog).getByText('Escolha a unidade.')).toBeInTheDocument()
@@ -115,7 +115,7 @@ describe('MenuTab: categories', () => {
     await user.selectOptions(within(dialog).getByLabelText('Unidade'), 'MILLILITER')
     await user.clear(within(dialog).getByLabelText('Meta de quantidade'))
     await user.type(within(dialog).getByLabelText('Meta de quantidade'), '5000')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar categoria' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1))
     expect(sent(fetchMock, 'POST', '/api/events/1/categories')).toEqual({ name: 'Bebidas', unit: 'MILLILITER', goalQuantity: 5000 })
@@ -134,7 +134,7 @@ describe('MenuTab: categories', () => {
     await waitFor(() => expect(within(dialog).getByLabelText('Unidade')).toHaveValue('MILLILITER'))
     await user.clear(within(dialog).getByLabelText('Nome'))
     await user.type(within(dialog).getByLabelText('Nome'), 'Sucos')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar categoria' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(sent(fetchMock, 'PUT', '/api/events/1/categories/2')).toEqual({ name: 'Sucos', unit: 'MILLILITER', goalQuantity: 0 })
@@ -167,7 +167,7 @@ describe('MenuTab: categories', () => {
     await user.type(within(dialog).getByLabelText('Nome'), 'Pratos')
     await waitFor(() => expect(within(dialog).getByLabelText('Unidade')).toBeEnabled())
     await user.selectOptions(within(dialog).getByLabelText('Unidade'), 'PORTION')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar categoria' }))
 
     expect(await within(dialog).findByText('Já existe uma categoria com este nome.')).toBeInTheDocument()
     expect(within(dialog).getByText('Nome já usado.')).toBeInTheDocument()
@@ -211,7 +211,7 @@ describe('MenuTab: categories', () => {
     await user.click(screen.getByRole('button', { name: 'Excluir Bebidas' }))
     const dialog = screen.getByRole('dialog', { name: 'Excluir esta categoria?' })
     expect(count(fetchMock, 'DELETE', '/api/events/1/categories/2')).toBe(0)
-    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir categoria' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(count(fetchMock, 'DELETE', '/api/events/1/categories/2')).toBe(1)
@@ -233,7 +233,7 @@ describe('MenuTab: categories', () => {
     const { onChanged } = renderTab({ categories: [drinks] })
 
     await user.click(screen.getByRole('button', { name: 'Excluir Bebidas' }))
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Excluir' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Excluir categoria' }))
 
     expect(await within(screen.getByRole('dialog')).findByRole('alert')).toHaveTextContent('Não é possível excluir uma categoria que ainda tem itens.')
     expect(onChanged).not.toHaveBeenCalled()
@@ -277,7 +277,7 @@ describe('MenuTab: items', () => {
     await user.click(within(dialog).getByLabelText('Item obrigatório'))
     await user.click(await within(dialog).findByLabelText('Lactose'))
     await user.click(within(dialog).getByLabelText('Açúcar adicionado'))
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar item' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1))
     expect(sent(fetchMock, 'POST', '/api/events/1/items')).toEqual({
@@ -300,7 +300,7 @@ describe('MenuTab: items', () => {
     const dialog = screen.getByRole('dialog')
     await user.selectOptions(within(dialog).getByLabelText('Categoria'), '')
     await user.type(within(dialog).getByLabelText('Quantidade necessária'), '0')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar item' }))
 
     expect(within(dialog).getByText('Informe o nome do item.')).toBeInTheDocument()
     expect(within(dialog).getByText('Escolha a categoria.')).toBeInTheDocument()
@@ -322,7 +322,7 @@ describe('MenuTab: items', () => {
     expect(within(dialog).getByText('Pratos')).toBeInTheDocument()
     await waitFor(() => expect(within(dialog).getByLabelText('Glúten')).toBeChecked())
     await user.click(within(dialog).getByLabelText('Glúten'))
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar item' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     const body = sent(fetchMock, 'PUT', '/api/events/1/items/7')
@@ -348,7 +348,7 @@ describe('MenuTab: items', () => {
     const dialog = screen.getByRole('dialog')
     await user.clear(within(dialog).getByLabelText('Quantidade necessária'))
     await user.type(within(dialog).getByLabelText('Quantidade necessária'), '2')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar item' }))
 
     expect(await within(dialog).findByText(/não pode ficar abaixo do que já foi contribuído/)).toBeInTheDocument()
     expect(within(dialog).getByLabelText('Quantidade necessária')).toHaveValue(2)
@@ -363,7 +363,7 @@ describe('MenuTab: items', () => {
 
     await user.click(screen.getByRole('button', { name: 'Excluir Farofa' }))
     expect(count(fetchMock, 'DELETE', '/api/events/1/items/8')).toBe(0)
-    await user.click(within(screen.getByRole('dialog', { name: 'Excluir este item?' })).getByRole('button', { name: 'Excluir' }))
+    await user.click(within(screen.getByRole('dialog', { name: 'Excluir este item?' })).getByRole('button', { name: 'Excluir item' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(count(fetchMock, 'DELETE', '/api/events/1/items/8')).toBe(1)

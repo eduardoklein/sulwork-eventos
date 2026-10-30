@@ -59,7 +59,7 @@ export function EnrollDialog({
     <ConfirmDialog
       open
       title="Inscrever participante"
-      confirmLabel="Inscrever"
+      confirmLabel="Inscrever participante"
       confirmDisabled={!ready}
       busy={busy}
       error={message}

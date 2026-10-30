@@ -9,7 +9,7 @@ export function Header() {
         </a>
         <nav aria-label="Principal" className="flex flex-wrap items-center gap-2">
           <a href="/swagger-ui.html" target="_blank" rel="noopener noreferrer" className={buttonClass('ghost')}>
-            Documentação da API
+            Documentação técnica
           </a>
           <a href="#/events/new" className={buttonClass('primary')}>
             Novo evento

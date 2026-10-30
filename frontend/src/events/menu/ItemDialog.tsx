@@ -91,7 +91,7 @@ export function ItemDialog({
     <ConfirmDialog
       open
       title={item ? 'Editar item' : 'Adicionar item'}
-      confirmLabel="Salvar"
+      confirmLabel="Salvar item"
       busy={busy}
       error={message}
       onConfirm={save}

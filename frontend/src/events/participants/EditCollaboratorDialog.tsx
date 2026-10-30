@@ -30,7 +30,7 @@ export function EditCollaboratorDialog({ participant, onSaved, onClose }: { part
   }
 
   return (
-    <ConfirmDialog open title="Editar cadastro" confirmLabel="Salvar" busy={busy} error={message} onConfirm={save} onCancel={onClose}>
+    <ConfirmDialog open title="Editar cadastro" confirmLabel="Salvar cadastro" busy={busy} error={message} onConfirm={save} onCancel={onClose}>
       <p>
         CPF: <span className="font-semibold">{participant.cpf}</span>. O CPF não muda.
       </p>

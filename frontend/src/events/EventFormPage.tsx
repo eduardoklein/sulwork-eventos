@@ -66,7 +66,7 @@ function EditEvent({ eventId }: { eventId: number }) {
       initial={valuesOf(event)}
       creating={false}
       rule={rule}
-      submitLabel="Salvar"
+      submitLabel="Salvar evento"
       save={(values) => updateEvent(event.id, toUpdateRequest(values))}
       savedText="Evento salvo."
     />

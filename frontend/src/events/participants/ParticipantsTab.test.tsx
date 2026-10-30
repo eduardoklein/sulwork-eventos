@@ -145,7 +145,7 @@ describe('ParticipantsTab: enrolling', () => {
 
     expect(within(dialog).getByLabelText('CPF')).toBeInTheDocument()
     expect(within(dialog).queryByLabelText('Nome')).not.toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'Inscrever' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'Inscrever participante' })).toBeDisabled()
   })
 
   it('masks the CPF while the person types', async () => {
@@ -172,7 +172,7 @@ describe('ParticipantsTab: enrolling', () => {
     expect(within(dialog).getByText('CPF inválido. Confira os números.')).toBeInTheDocument()
     expect(within(dialog).getByLabelText('CPF')).toHaveAttribute('aria-invalid', 'true')
     expect(fetchMock.mock.calls.some(([input]) => String(input).startsWith('/api/collaborators'))).toBe(false)
-    expect(within(dialog).getByRole('button', { name: 'Inscrever' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'Inscrever participante' })).toBeDisabled()
   })
 
   it('asks for name and restrictions when the CPF is new, and enrolls with them', async () => {
@@ -185,7 +185,7 @@ describe('ParticipantsTab: enrolling', () => {
     expect(await within(dialog).findByText('CPF novo. Preencha o cadastro da pessoa.')).toBeInTheDocument()
     await user.type(within(dialog).getByLabelText('Nome'), '  Ana Souza ')
     await user.click(within(dialog).getByLabelText('Vegano'))
-    await user.click(within(dialog).getByRole('button', { name: 'Inscrever' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Inscrever participante' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1))
     expect(sent(fetchMock, 'POST', '/api/events/1/participants')).toEqual({ cpf: CPF, name: 'Ana Souza', restrictions: ['VEGAN'] })
@@ -201,7 +201,7 @@ describe('ParticipantsTab: enrolling', () => {
 
     await user.type(within(dialog).getByLabelText('CPF'), CPF)
     await within(dialog).findByLabelText('Nome')
-    await user.click(within(dialog).getByRole('button', { name: 'Inscrever' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Inscrever participante' }))
 
     expect(within(dialog).getByText('Informe o nome da pessoa.')).toBeInTheDocument()
     expect(count(fetchMock, 'POST', '/api/events/1/participants')).toBe(0)
@@ -221,7 +221,7 @@ describe('ParticipantsTab: enrolling', () => {
     expect(within(dialog).getByText('Restrições: Intolerância à lactose')).toBeInTheDocument()
     expect(within(dialog).queryByLabelText('Nome')).not.toBeInTheDocument()
     expect(within(dialog).queryByRole('checkbox')).not.toBeInTheDocument()
-    await user.click(within(dialog).getByRole('button', { name: 'Inscrever' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Inscrever participante' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(sent(fetchMock, 'POST', '/api/events/1/participants')).toEqual({ cpf: CPF })
@@ -248,7 +248,7 @@ describe('ParticipantsTab: enrolling', () => {
     await user.type(within(dialog).getByLabelText('CPF'), CPF)
 
     expect(await within(dialog).findByText('Esta pessoa já está inscrita neste evento.')).toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'Inscrever' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'Inscrever participante' })).toBeDisabled()
   })
 
   it('goes back to the first step when the CPF changes after the lookup', async () => {
@@ -262,7 +262,7 @@ describe('ParticipantsTab: enrolling', () => {
     await user.type(within(dialog).getByLabelText('CPF'), '{Backspace}')
 
     expect(within(dialog).queryByLabelText('Nome')).not.toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'Inscrever' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'Inscrever participante' })).toBeDisabled()
   })
 
   it('shows the reason, and keeps the button off, when the lookup fails', async () => {
@@ -274,7 +274,7 @@ describe('ParticipantsTab: enrolling', () => {
     await user.type(within(dialog).getByLabelText('CPF'), CPF)
 
     expect(await within(dialog).findByText('Erro interno do servidor.')).toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'Inscrever' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'Inscrever participante' })).toBeDisabled()
   })
 
   it('keeps the window open with the reason when the API refuses the enrollment', async () => {
@@ -289,7 +289,7 @@ describe('ParticipantsTab: enrolling', () => {
 
     await user.type(within(dialog).getByLabelText('CPF'), CPF)
     await user.type(await within(dialog).findByLabelText('Nome'), 'Ana')
-    await user.click(within(dialog).getByRole('button', { name: 'Inscrever' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Inscrever participante' }))
 
     expect(await within(dialog).findByText('Só um evento aberto aceita mudanças nos participantes.')).toBeInTheDocument()
     expect(within(dialog).getByLabelText('Nome')).toHaveValue('Ana')
@@ -324,7 +324,7 @@ describe('ParticipantsTab: editing the registration', () => {
     await user.clear(within(dialog).getByLabelText('Nome'))
     await user.type(within(dialog).getByLabelText('Nome'), 'Ana Souza Lima')
     await user.click(within(dialog).getByLabelText('Vegano'))
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar cadastro' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(sent(fetchMock, 'PUT', '/api/collaborators/10')).toEqual({ name: 'Ana Souza Lima', restrictions: ['CELIAC_GLUTEN_FREE'] })
@@ -340,7 +340,7 @@ describe('ParticipantsTab: editing the registration', () => {
     const dialog = screen.getByRole('dialog')
     await user.click(within(dialog).getByLabelText('Vegano'))
     await user.click(within(dialog).getByLabelText('Celíaco, sem glúten'))
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar cadastro' }))
 
     await waitFor(() => expect(sent(fetchMock, 'PUT', '/api/collaborators/10')).toEqual({ name: 'Ana Souza', restrictions: [] }))
   })
@@ -353,7 +353,7 @@ describe('ParticipantsTab: editing the registration', () => {
     await user.click(screen.getByRole('button', { name: 'Editar cadastro de Ana Souza' }))
     const dialog = screen.getByRole('dialog')
     await user.clear(within(dialog).getByLabelText('Nome'))
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar cadastro' }))
 
     expect(within(dialog).getByText('Informe o nome da pessoa.')).toBeInTheDocument()
     expect(count(fetchMock, 'PUT', '/api/collaborators/10')).toBe(0)
@@ -367,7 +367,7 @@ describe('ParticipantsTab: editing the registration', () => {
     await user.click(screen.getByRole('button', { name: 'Editar cadastro de Ana Souza' }))
     const dialog = screen.getByRole('dialog')
     await user.type(within(dialog).getByLabelText('Nome'), ' Lima')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar cadastro' }))
 
     expect(await within(dialog).findByText('Dados inválidos.')).toBeInTheDocument()
     expect(within(dialog).getByLabelText('Nome')).toHaveValue('Ana Souza Lima')
@@ -387,7 +387,7 @@ describe('ParticipantsTab: removing', () => {
     const dialog = screen.getByRole('dialog', { name: 'Remover este participante?' })
     expect(within(dialog).getByText('Ana Souza sai do evento, e as 2 contribuições dessa pessoa também são removidas.')).toBeInTheDocument()
     expect(count(fetchMock, 'DELETE', '/api/events/1/participants/1')).toBe(0)
-    await user.click(within(dialog).getByRole('button', { name: 'Remover' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Remover participante' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(count(fetchMock, 'DELETE', '/api/events/1/participants/1')).toBe(1)
@@ -425,7 +425,7 @@ describe('ParticipantsTab: removing', () => {
     const { onChanged } = renderTab({ participants: [ana], analysis })
 
     await user.click(screen.getByRole('button', { name: 'Remover Ana Souza' }))
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Remover' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Remover participante' }))
 
     expect(await within(screen.getByRole('dialog')).findByRole('alert')).toHaveTextContent('Só um evento aberto aceita mudanças nos participantes.')
     expect(onChanged).not.toHaveBeenCalled()

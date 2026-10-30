@@ -110,7 +110,7 @@ describe('ContributionsTab: registering', () => {
     await user.selectOptions(within(dialog).getByLabelText('Item'), 'Farofa (faltam 5)')
     await user.type(within(dialog).getByLabelText('Quantidade'), '2')
     await user.type(within(dialog).getByLabelText('Observação (opcional)'), '  Sem cebola ')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar contribuição' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1))
     expect(sent(fetchMock, 'POST', '/api/events/1/contributions')).toEqual({ participantId: 2, itemId: 8, quantity: 2, note: 'Sem cebola' })
@@ -128,7 +128,7 @@ describe('ContributionsTab: registering', () => {
     await user.selectOptions(within(dialog).getByLabelText('Participante'), 'Ana Souza')
     await user.selectOptions(within(dialog).getByLabelText('Item'), 'Farofa (faltam 5)')
     await user.type(within(dialog).getByLabelText('Quantidade'), '1')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar contribuição' }))
 
     await waitFor(() => expect(sent(fetchMock, 'POST', '/api/events/1/contributions')?.note).toBeNull())
   })
@@ -141,7 +141,7 @@ describe('ContributionsTab: registering', () => {
     await user.click(screen.getByRole('button', { name: 'Registrar contribuição' }))
     const dialog = screen.getByRole('dialog')
     await user.type(within(dialog).getByLabelText('Quantidade'), '0')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar contribuição' }))
 
     expect(within(dialog).getByText('Escolha o participante.')).toBeInTheDocument()
     expect(within(dialog).getByText('Escolha o item.')).toBeInTheDocument()
@@ -159,7 +159,7 @@ describe('ContributionsTab: registering', () => {
     await user.selectOptions(within(dialog).getByLabelText('Participante'), 'Ana Souza')
     await user.selectOptions(within(dialog).getByLabelText('Item'), 'Lasanha (faltam 6)')
     await user.type(within(dialog).getByLabelText('Quantidade'), '9')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar contribuição' }))
 
     expect(await within(dialog).findByText('Só cabem mais 6 (porção) neste item.')).toBeInTheDocument()
     expect(within(dialog).getByLabelText('Quantidade')).toHaveValue(9)
@@ -181,7 +181,7 @@ describe('ContributionsTab: registering', () => {
     await user.selectOptions(within(dialog).getByLabelText('Participante'), 'Ana Souza')
     await user.selectOptions(within(dialog).getByLabelText('Item'), 'Lasanha (faltam 6)')
     await user.type(within(dialog).getByLabelText('Quantidade'), '1')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar contribuição' }))
 
     expect(await within(dialog).findByText('Esta pessoa já contribui com este item. Edite a contribuição.')).toBeInTheDocument()
   })
@@ -247,7 +247,7 @@ describe('ContributionsTab: editing', () => {
     await user.clear(within(dialog).getByLabelText('Quantidade'))
     await user.type(within(dialog).getByLabelText('Quantidade'), '6')
     await user.clear(within(dialog).getByLabelText('Observação (opcional)'))
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar contribuição' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(sent(fetchMock, 'PUT', '/api/events/1/contributions/3')).toEqual({ quantity: 6, note: null })
@@ -264,7 +264,7 @@ describe('ContributionsTab: editing', () => {
     const dialog = screen.getByRole('dialog')
     await user.clear(within(dialog).getByLabelText('Quantidade'))
     await user.type(within(dialog).getByLabelText('Quantidade'), '11')
-    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar contribuição' }))
 
     expect(await within(dialog).findByText('O máximo para esta contribuição é 10 (porção).')).toBeInTheDocument()
     expect(within(dialog).getByLabelText('Quantidade')).toHaveValue(11)
@@ -284,7 +284,7 @@ describe('ContributionsTab: removing', () => {
     const dialog = screen.getByRole('dialog', { name: 'Remover esta contribuição?' })
     expect(within(dialog).getByText('Ana Souza deixa de levar 4 (porção) de Lasanha.')).toBeInTheDocument()
     expect(count(fetchMock, 'DELETE', '/api/events/1/contributions/3')).toBe(0)
-    await user.click(within(dialog).getByRole('button', { name: 'Remover' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Remover contribuição' }))
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
     expect(count(fetchMock, 'DELETE', '/api/events/1/contributions/3')).toBe(1)
@@ -309,7 +309,7 @@ describe('ContributionsTab: removing', () => {
     const { onChanged } = renderTab({ contributions: [contribution] })
 
     await user.click(screen.getByRole('button', { name: removeName }))
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Remover' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Remover contribuição' }))
 
     expect(await within(screen.getByRole('dialog')).findByRole('alert')).toHaveTextContent('O prazo para alterações já passou.')
     expect(onChanged).not.toHaveBeenCalled()

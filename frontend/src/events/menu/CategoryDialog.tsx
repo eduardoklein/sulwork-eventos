@@ -67,7 +67,7 @@ export function CategoryDialog({
     <ConfirmDialog
       open
       title={category ? 'Editar categoria' : 'Adicionar categoria'}
-      confirmLabel="Salvar"
+      confirmLabel="Salvar categoria"
       busy={busy}
       error={message}
       onConfirm={save}

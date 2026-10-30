@@ -82,7 +82,7 @@ export function ParticipantsTab({
               : `${removing.name} sai do evento.`
           }
           done="Participante removido."
-          confirmLabel="Remover"
+          confirmLabel="Remover participante"
           remove={() => removeParticipant(event.id, removing.id)}
           onDeleted={onChanged}
           onClose={close}

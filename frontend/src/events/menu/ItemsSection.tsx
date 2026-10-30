@@ -58,6 +58,7 @@ export function ItemsSection({
           title="Excluir este item?"
           text={`O item ${dialog.item.name} será apagado. Isso não pode ser desfeito.`}
           done="Item excluído."
+          confirmLabel="Excluir item"
           remove={() => deleteItem(eventId, dialog.item.id)}
           onDeleted={onChanged}
           onClose={close}

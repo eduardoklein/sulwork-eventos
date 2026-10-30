@@ -76,7 +76,7 @@ export function ContributionsTab({
           title="Remover esta contribuição?"
           text={`${removing.participantName} deixa de levar ${removing.quantity} (${labelFor(options?.measureUnits, removing.unit).toLowerCase()}) de ${removing.itemName}.`}
           done="Contribuição removida."
-          confirmLabel="Remover"
+          confirmLabel="Remover contribuição"
           remove={() => removeContribution(event.id, removing.id)}
           onDeleted={onChanged}
           onClose={close}
