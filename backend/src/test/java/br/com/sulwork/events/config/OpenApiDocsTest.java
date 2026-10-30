@@ -46,6 +46,22 @@ class OpenApiDocsTest {
 		assertThat(info.get("description").asString()).contains("Problem Details").contains("Sem login");
 	}
 
+	/**
+	 * The Swagger page draws each inline code span with its own padding, and a paragraph with five of them on
+	 * wrapped lines overlaps itself. Each error code goes in its own list item, in bold and with no code span.
+	 */
+	@Test
+	void listsEachErrorCodeInItsOwnListItemWithoutInlineCode() throws Exception {
+		String description = docs().get("info").get("description").asString();
+		List<String> lines = description.lines().toList();
+
+		for (String code : List.of("400", "404", "409", "422", "500")) {
+			assertThat(lines).as("a list item for " + code).anyMatch(line -> line.startsWith("- **" + code + "**"));
+		}
+		assertThat(lines.stream().filter(line -> line.startsWith("- **")))
+				.as("the list items of the error codes").noneMatch(line -> line.contains("`"));
+	}
+
 	@Test
 	void everyOperationHasASummaryAndATag() throws Exception {
 		List<String> undocumented = new ArrayList<>();
